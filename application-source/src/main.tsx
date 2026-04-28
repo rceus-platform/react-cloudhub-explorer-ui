@@ -18,7 +18,15 @@ import { AuthProvider } from "./context/AuthContext";
 import App from "./App";
 import "./index.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes default
+      gcTime: 30 * 60 * 1000, // 30 minutes default
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 /** Application initialization and root rendering */
 ReactDOM.createRoot(document.getElementById("root")!).render(
