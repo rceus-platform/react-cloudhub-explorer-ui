@@ -22,7 +22,8 @@ export interface Account {
 
 export interface AuthContextType {
   isUnlocked: boolean;
-  unlock: (passcode: string) => boolean;
+  unlock: (passcode: string) => Promise<boolean>;
+  login: (username: string, passcode: string) => Promise<boolean>;
   error: string | null;
   connectedAccounts: Account[];
   isLoadingAccounts: boolean;

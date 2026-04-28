@@ -27,16 +27,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [connectedAccounts, setConnectedAccounts] = useState<Account[]>([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
 
-  const EXPECTED_PASSCODE = import.meta.env.VITE_SITE_PASSCODE;
-
   const refreshAccounts = useCallback(async () => {
     if (!isUnlocked) return;
     setIsLoadingAccounts(true);
     try {
       const accounts = await apiClient.get<Account[]>('/accounts/');
       setConnectedAccounts(accounts);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to fetch accounts:', err);
+      // If unauthorized, reset unlock state
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      if (errorMessage.includes('401')) {
+        setIsUnlocked(false);
+        sessionStorage.removeItem('site_unlocked');
+        localStorage.removeItem('access_token');
+      }
     } finally {
       setIsLoadingAccounts(false);
     }
@@ -58,14 +63,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [isUnlocked, refreshAccounts]);
 
-  const unlock = (passcode: string) => {
-    if (passcode === EXPECTED_PASSCODE) {
+  const unlock = async (passcode: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'admin', password: passcode }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Invalid credentials');
+      }
+      
+      const data = await response.json();
+      localStorage.setItem('access_token', data.access_token);
+      
       setIsUnlocked(true);
       setError(null);
       sessionStorage.setItem('site_unlocked', 'true');
       return true;
-    } else {
+    } catch (err) {
+      console.error('Login error:', err);
       setError('Incorrect passcode. Please try again.');
+      return false;
+    }
+  };
+
+  const login = async (username: string, passcode: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password: passcode }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Invalid credentials');
+      }
+      
+      const data = await response.json();
+      localStorage.setItem('access_token', data.access_token);
+      
+      setIsUnlocked(true);
+      setError(null);
+      sessionStorage.setItem('site_unlocked', 'true');
+      return true;
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Incorrect username or passcode. Please try again.');
       return false;
     }
   };
@@ -74,6 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider value={{ 
       isUnlocked, 
       unlock, 
+      login,
       error, 
       connectedAccounts, 
       isLoadingAccounts, 
