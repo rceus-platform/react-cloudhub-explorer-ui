@@ -22,6 +22,7 @@ export interface Account {
 
 export interface AuthContextType {
   isUnlocked: boolean;
+  token: string | null;
   unlock: (passcode: string) => Promise<boolean>;
   login: (username: string, passcode: string) => Promise<boolean>;
   error: string | null;

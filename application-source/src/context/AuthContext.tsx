@@ -23,6 +23,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isUnlocked, setIsUnlocked] = useState(() => {
     return sessionStorage.getItem('site_unlocked') === 'true';
   });
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem('access_token');
+  });
   const [error, setError] = useState<string | null>(null);
   const [connectedAccounts, setConnectedAccounts] = useState<Account[]>([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
@@ -39,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const errorMessage = err instanceof Error ? err.message : String(err);
       if (errorMessage.includes('401')) {
         setIsUnlocked(false);
+        setToken(null);
         sessionStorage.removeItem('site_unlocked');
         localStorage.removeItem('access_token');
       }
@@ -77,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const data = await response.json();
       localStorage.setItem('access_token', data.access_token);
+      setToken(data.access_token);
       
       setIsUnlocked(true);
       setError(null);
@@ -103,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const data = await response.json();
       localStorage.setItem('access_token', data.access_token);
+      setToken(data.access_token);
       
       setIsUnlocked(true);
       setError(null);
@@ -118,6 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{ 
       isUnlocked, 
+      token,
       unlock, 
       login,
       error, 

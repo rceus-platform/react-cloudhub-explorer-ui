@@ -14,6 +14,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useFiles } from "../hooks/useFiles";
+import { useAuth } from "../../../hooks/useAuth";
 import { FileCard } from "./FileCard";
 import { FileCardSkeleton } from "../../../components/Skeleton";
 import type { FileItem, FolderState } from "../types";
@@ -24,6 +25,7 @@ import { FileLibraryHero } from "./FileLibraryHero";
 export const FileLibrary: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { token } = useAuth();
     
     // Initialize state from URL if possible to avoid cascading renders in useEffect
     const [history, setHistory] = useState<FolderState[]>(() => {
@@ -108,7 +110,7 @@ export const FileLibrary: React.FC = () => {
 
             const isImage = /\.(jpg|jpeg|png|webp|heic|gif|bmp)$/i.test(file.name);
             if (isImage) {
-                const url = `${import.meta.env.VITE_API_BASE_URL}/files/thumbnail?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}`;
+                const url = `${import.meta.env.VITE_API_BASE_URL}/files/thumbnail?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&token=${token}`;
                 window.open(url, "_blank");
                 return;
             }

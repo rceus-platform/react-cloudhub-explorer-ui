@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect } from "react";
 import { FaTimes, FaCamera, FaUpload, FaSpinner } from "react-icons/fa";
+import { useAuth } from "../../../hooks/useAuth";
 import type { FileItem } from "../types";
 import { updateThumbnail } from "../services/fileService";
 import type { UpdateThumbnailResponse } from "../types";
@@ -32,6 +33,7 @@ interface ThumbnailModalProps {
 export const ThumbnailModal: React.FC<ThumbnailModalProps> = ({ 
     file, provider, fileId, isOpen, initialTimestamp, onClose, onUpdate 
 }) => {
+    const { token } = useAuth();
     const isImage = /\.(jpg|jpeg|png|webp|heic|gif|bmp)$/i.test(file.name || "");
     const [mode, setMode] = useState<"capture" | "upload">(isImage ? "upload" : "capture");
     const [timestamp, setTimestamp] = useState(initialTimestamp || 60);
@@ -50,7 +52,7 @@ export const ThumbnailModal: React.FC<ThumbnailModalProps> = ({
 
     const handlePreview = async () => {
         setLoading(true);
-        const url = `${apiBaseUrl}/files/thumbnail?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&timestamp=${timestamp}&t=${Date.now()}`;
+        const url = `${apiBaseUrl}/files/thumbnail?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&timestamp=${timestamp}&t=${Date.now()}&token=${token}`;
         setPreviewUrl(url);
         setTimeout(() => setLoading(false), 300);
     };
@@ -74,7 +76,7 @@ export const ThumbnailModal: React.FC<ThumbnailModalProps> = ({
         }
     };
 
-    const fallbackUrl = `${apiBaseUrl}/files/thumbnail?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}`;
+    const fallbackUrl = `${apiBaseUrl}/files/thumbnail?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&token=${token}`;
 
     return (
         <div style={{

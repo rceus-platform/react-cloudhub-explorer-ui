@@ -27,11 +27,11 @@ export function useFiles(folderId: string) {
             if (typeof parsed === "object" && parsed !== null) {
                 // Sort keys alphabetically for consistent query key
                 return JSON.stringify(Object.keys(parsed).sort().reduce((acc, key) => {
-                    acc[key] = parsed[key];
+                    acc[key] = (parsed as Record<string, unknown>)[key];
                     return acc;
-                }, {} as any));
+                }, {} as Record<string, unknown>));
             }
-        } catch (e) {
+        } catch {
             // Not a JSON string, use as is
         }
         return folderId;
@@ -40,7 +40,7 @@ export function useFiles(folderId: string) {
     const query = useQuery<FilesResponse>({
         queryKey: ["files", normalizedFolderId],
         queryFn: () => fetchFiles(normalizedFolderId),
-        staleTime: 30 * 60 * 1000, 
+        staleTime: 30 * 60 * 1000,
         gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
         refetchOnWindowFocus: false,
     });
