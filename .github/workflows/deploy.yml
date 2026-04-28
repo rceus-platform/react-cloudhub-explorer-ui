@@ -1,0 +1,101 @@
+name: Deploy App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: application-source/package-lock.json
+
+      - name: Install dependencies
+        working-directory: application-source
+        run: npm install
+
+      - name: Build application
+        working-directory: application-source
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_PERSIST_SEARCH_CACHE: ${{ secrets.VITE_PERSIST_SEARCH_CACHE }}
+          VITE_SITE_PASSCODE: ${{ secrets.SITE_PASSCODE }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: application-source/dist/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist-artifact
+
+      - name: Transfer build artifacts to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: "dist-artifact/*"
+          target: "/tmp/cloudhub-explorer-ui-dist"
+          strip_components: 1
+
+      - name: Deploy and Configure
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          envs: GITHUB_REPOSITORY,VITE_SITE_PASSCODE,VITE_API_BASE_URL,VITE_PERSIST_SEARCH_CACHE
+          script: |
+            set -e
+
+            APP_NAME="$(basename $GITHUB_REPOSITORY)"
+            APP_DIR="/opt/apps/$APP_NAME"
+            echo "➡ Ensuring directory permissions"
+            sudo mkdir -p /opt/apps
+
+            echo "➡ Deploying $APP_NAME"
+            cd $APP_DIR
+
+            echo "🧹 Cleaning and updating code"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "🚀 Installing pre-built artifacts"
+            rm -rf application-source/dist
+            mkdir -p application-source/dist
+            cp -r /tmp/cloudhub-explorer-ui-dist/* application-source/dist/
+            rm -rf /tmp/cloudhub-explorer-ui-dist
+
+            echo "➡ Handover to standardized create_app.sh"
+            export APP_NAME
+            sudo -E bash codebuild/create_app.sh
+
+            echo "✅ Deploy completed successfully"
+        env:
+          VITE_SITE_PASSCODE: ${{ secrets.SITE_PASSCODE }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_PERSIST_SEARCH_CACHE: ${{ secrets.VITE_PERSIST_SEARCH_CACHE }}
