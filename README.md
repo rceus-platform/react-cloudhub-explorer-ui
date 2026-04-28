@@ -23,7 +23,7 @@ The Cloud Hub Explorer UI is a modern, feature-rich file explorer interface buil
 ### Media Management
 
 - **Integrated Video Player**: Modern video player with advanced playback controls.
-- **Thumbnail Ecosystem**: 
+- **Thumbnail Ecosystem**:
   - Automated thumbnail previews for images and videos.
   - **Manual Upload**: Upload custom thumbnails for any file.
   - **Frame Capture**: Capture specific frames from videos to use as thumbnails.
@@ -50,6 +50,7 @@ The Cloud Hub Explorer UI is a modern, feature-rich file explorer interface buil
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd react-cloudhub-explorer-ui/application-source
@@ -109,24 +110,27 @@ src/
 ## Core Components
 
 ### Account Management
+
 - **AccountManager**: Unified dashboard for connecting and monitoring cloud accounts.
 - **AccountCard**: Detailed status for individual Google Drive or MEGA accounts.
 
 ### File Explorer
+
 - **FileLibrary**: The main browsing engine with history management and breadcrumbs.
 - **FileCard**: Interactive card with metadata display and context actions.
 - **ThumbnailModal**: Interface for capturing frames or uploading custom file covers.
 
 ### Security
+
 - **PasscodeOverlay**: High-security entry screen for the application.
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_API_BASE_URL` | Endpoint for the Python CloudHub API | `http://localhost:8000` |
-| `VITE_SITE_PASSCODE` | 4-digit code required to unlock the UI | `8080` |
-| `VITE_PERSIST_SEARCH_CACHE` | Keep search results in local storage | `true` |
+| Variable                    | Description                            | Default                 |
+| --------------------------- | -------------------------------------- | ----------------------- |
+| `VITE_API_BASE_URL`         | Endpoint for the Python CloudHub API   | `http://localhost:8000` |
+| `VITE_SITE_PASSCODE`        | 4-digit code required to unlock the UI | `8080`                  |
+| `VITE_PERSIST_SEARCH_CACHE` | Keep search results in local storage   | `true`                  |
 
 ---
 
