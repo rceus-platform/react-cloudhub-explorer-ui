@@ -1,5 +1,5 @@
 /**
- * AuthOverlay Component
+ * PasscodeOverlay Component
  * 
  * Responsibilities:
  * - Provide a secure entry point for the application
@@ -18,7 +18,7 @@ interface AuthOverlayProps {
   error?: string | null;
 }
 
-export const AuthOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin, error: externalError }) => {
+export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin, error: externalError }) => {
   const [mode, setMode] = useState<'pin' | 'login'>('pin');
   const [pin, setPin] = useState(['', '', '', '']);
   const [username, setUsername] = useState('admin');

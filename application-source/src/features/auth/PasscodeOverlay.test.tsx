@@ -18,15 +18,16 @@ import { PasscodeOverlay } from "./PasscodeOverlay";
 /** Main test suite for the security entry overlay */
 describe("PasscodeOverlay Component", () => {
     const mockOnVerify = vi.fn();
+    const mockOnLogin = vi.fn();
 
     it("renders correctly with 4 input fields", () => {
-        const { container } = render(<PasscodeOverlay onVerify={mockOnVerify} />);
+        const { container } = render(<PasscodeOverlay onVerify={mockOnVerify} onLogin={mockOnLogin} />);
         const inputs = container.querySelectorAll('input[type="password"]');
         expect(inputs.length).toBe(4);
     });
 
     it("auto-focuses next input on digit entry", () => {
-        const { container } = render(<PasscodeOverlay onVerify={mockOnVerify} />);
+        const { container } = render(<PasscodeOverlay onVerify={mockOnVerify} onLogin={mockOnLogin} />);
         const inputs = container.querySelectorAll('input[type="password"]') as NodeListOf<HTMLInputElement>;
         
         // Initial focus should be on the first input due to autoFocus
@@ -41,7 +42,7 @@ describe("PasscodeOverlay Component", () => {
     });
 
     it("moves focus back on backspace when empty", () => {
-        const { container } = render(<PasscodeOverlay onVerify={mockOnVerify} />);
+        const { container } = render(<PasscodeOverlay onVerify={mockOnVerify} onLogin={mockOnLogin} />);
         const inputs = container.querySelectorAll('input[type="password"]') as NodeListOf<HTMLInputElement>;
         
         fireEvent.change(inputs[0], { target: { value: "1" } });
@@ -53,7 +54,7 @@ describe("PasscodeOverlay Component", () => {
     });
 
     it("submits automatically when 4th digit is entered", () => {
-        const { container } = render(<PasscodeOverlay onVerify={mockOnVerify} />);
+        const { container } = render(<PasscodeOverlay onVerify={mockOnVerify} onLogin={mockOnLogin} />);
         const inputs = container.querySelectorAll('input[type="password"]') as NodeListOf<HTMLInputElement>;
         
         fireEvent.change(inputs[0], { target: { value: "1" } });
@@ -65,30 +66,34 @@ describe("PasscodeOverlay Component", () => {
     });
 
     it("displays error message when provided", () => {
-        render(<PasscodeOverlay onVerify={mockOnVerify} error="Invalid Code" />);
+        render(<PasscodeOverlay onVerify={mockOnVerify} onLogin={mockOnLogin} error="Invalid Code" />);
         expect(screen.getByText("Invalid Code")).toBeDefined();
     });
 
     it("takes the last character if multiple are entered", () => {
-        const { container } = render(<PasscodeOverlay onVerify={mockOnVerify} />);
+        const { container } = render(<PasscodeOverlay onVerify={mockOnVerify} onLogin={mockOnLogin} />);
         const inputs = container.querySelectorAll('input[type="password"]') as NodeListOf<HTMLInputElement>;
         
         fireEvent.change(inputs[0], { target: { value: "12" } });
         expect(inputs[0].value).toBe("2");
     });
 
-    it("handles manual form submission", () => {
-        render(<PasscodeOverlay onVerify={mockOnVerify} />);
-        const inputs = document.querySelectorAll('input[type="password"]') as NodeListOf<HTMLInputElement>;
+    it("handles admin login submission", async () => {
+        render(<PasscodeOverlay onVerify={mockOnVerify} onLogin={mockOnLogin} />);
         
-        fireEvent.change(inputs[0], { target: { value: "1" } });
-        fireEvent.change(inputs[1], { target: { value: "2" } });
-        fireEvent.change(inputs[2], { target: { value: "3" } });
-        fireEvent.change(inputs[3], { target: { value: "4" } });
+        // Switch to login mode
+        const loginTab = screen.getByText("Admin Login");
+        fireEvent.click(loginTab);
         
-        const submitBtn = screen.getByText("Unlock Application");
+        const usernameInput = screen.getByPlaceholderText("Username");
+        const passwordInput = screen.getByPlaceholderText("Password");
+        
+        fireEvent.change(usernameInput, { target: { value: "admin" } });
+        fireEvent.change(passwordInput, { target: { value: "password123" } });
+        
+        const submitBtn = screen.getByRole("button", { name: /Sign In/i });
         fireEvent.click(submitBtn);
         
-        expect(mockOnVerify).toHaveBeenCalledWith("1234");
+        expect(mockOnLogin).toHaveBeenCalledWith("admin", "password123");
     });
 });

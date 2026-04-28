@@ -13,7 +13,7 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Viewer from "./pages/Viewer";
 import VideoPlayerPage from "./pages/VideoPlayerPage";
-import { AuthOverlay } from "./features/auth/PasscodeOverlay";
+import { PasscodeOverlay } from "./features/auth/PasscodeOverlay";
 import { useAuth } from "./hooks/useAuth";
 
 /** Root application component with core routing configuration */
@@ -21,7 +21,7 @@ export default function App() {
   const { isUnlocked, unlock, login, error } = useAuth();
 
   if (!isUnlocked) {
-    return <AuthOverlay onVerify={unlock} onLogin={login} error={error} />;
+    return <PasscodeOverlay onVerify={unlock} onLogin={login} error={error} />;
   }
 
   return (
