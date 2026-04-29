@@ -23,7 +23,7 @@ describe("MegaAddForm Component", () => {
 
     it("renders correctly and handles input changes", () => {
         render(
-            <MegaAddForm 
+            <MegaAddForm
                 email="test@mega.nz"
                 setEmail={mockSetEmail}
                 password="pass"
@@ -36,7 +36,7 @@ describe("MegaAddForm Component", () => {
 
         expect(screen.getByPlaceholderText("MEGA Email")).toBeDefined();
         expect((screen.getByPlaceholderText("MEGA Email") as HTMLInputElement).value).toBe("test@mega.nz");
-        
+
         fireEvent.change(screen.getByPlaceholderText("MEGA Email"), { target: { value: "new@mega.nz" } });
         expect(mockSetEmail).toHaveBeenCalledWith("new@mega.nz");
 
@@ -46,7 +46,7 @@ describe("MegaAddForm Component", () => {
 
     it("triggers onSubmit when form is submitted", () => {
         render(
-            <MegaAddForm 
+            <MegaAddForm
                 email="test@mega.nz"
                 setEmail={mockSetEmail}
                 password="pass"
@@ -63,7 +63,7 @@ describe("MegaAddForm Component", () => {
 
     it("shows loading state when isSubmitting is true", () => {
         render(
-            <MegaAddForm 
+            <MegaAddForm
                 email=""
                 setEmail={mockSetEmail}
                 password=""
@@ -79,7 +79,7 @@ describe("MegaAddForm Component", () => {
 
     it("displays error message when provided", () => {
         render(
-            <MegaAddForm 
+            <MegaAddForm
                 email=""
                 setEmail={mockSetEmail}
                 password=""

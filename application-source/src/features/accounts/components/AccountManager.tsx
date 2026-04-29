@@ -13,11 +13,12 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, 
-  Cloud, 
-  Loader2, 
-  RefreshCw
+import {
+  X,
+  Cloud,
+  Loader2,
+  RefreshCw,
+  Image as ImageIcon
 } from 'lucide-react';
 import { SiGooglecloud, SiMega } from 'react-icons/si';
 import { useAccountManager } from '../hooks/useAccountManager';
@@ -48,14 +49,16 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ isOpen, onClose 
     formatBytes,
     handleAddGDrive,
     handleAddMega,
-    toggleMegaForm
+    toggleMegaForm,
+    handleSyncThumbnails,
+    isSyncing
   } = useAccountManager();
 
   if (!isOpen) return null;
 
   return (
     <div className="account-manager-overlay">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 40 }}
@@ -67,8 +70,17 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ isOpen, onClose 
             <h2>Cloud Accounts</h2>
           </div>
           <div className="header-actions">
-            <button 
-              className="refresh-btn" 
+            <button
+              className={`sync-btn ${isSyncing ? 'syncing' : ''}`}
+              onClick={handleSyncThumbnails}
+              disabled={isSyncing}
+              title="Sync Thumbnails in Background"
+              style={{ marginRight: '8px', padding: '6px', background: 'transparent', border: 'none', cursor: 'pointer', opacity: isSyncing ? 0.5 : 0.8 }}
+            >
+              <ImageIcon size={18} />
+            </button>
+            <button
+              className="refresh-btn"
               onClick={refreshAccounts}
               disabled={isLoadingAccounts}
               title="Sync Accounts"
@@ -87,7 +99,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ isOpen, onClose 
               <h3>Connected Infrastructure</h3>
               <span className="account-count">{connectedAccounts.length} active</span>
             </div>
-            
+
             {isLoadingAccounts && connectedAccounts.length === 0 ? (
               <div className="loading-state">
                 <Loader2 className="spin" />
@@ -100,9 +112,9 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ isOpen, onClose 
             ) : (
               <div className="accounts-list">
                 {connectedAccounts.map((account) => (
-                  <AccountCard 
-                    key={account.id} 
-                    account={account} 
+                  <AccountCard
+                    key={account.id}
+                    account={account}
                     formatBytes={formatBytes}
                     onDisconnect={logoutAccount}
                   />
@@ -115,18 +127,18 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ isOpen, onClose 
             <div className="section-header">
               <h3>Expand Infrastructure</h3>
             </div>
-            
+
             <div className="add-buttons">
-              <button 
-                className="add-btn" 
+              <button
+                className="add-btn"
                 onClick={handleAddGDrive}
                 style={{ background: "rgba(66, 133, 244, 0.05)", borderColor: "rgba(66, 133, 244, 0.2)" }}
               >
                 <SiGooglecloud size={24} color="#4285f4" />
                 <span>Link Google Drive</span>
               </button>
-              <button 
-                className={`add-btn ${isAddingMega ? 'active' : ''}`} 
+              <button
+                className={`add-btn ${isAddingMega ? 'active' : ''}`}
                 onClick={toggleMegaForm}
                 style={{ background: "rgba(255, 59, 48, 0.05)", borderColor: "rgba(255, 59, 48, 0.2)" }}
               >
@@ -137,7 +149,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ isOpen, onClose 
 
             <AnimatePresence>
               {isAddingMega && (
-                <MegaAddForm 
+                <MegaAddForm
                   email={megaEmail}
                   setEmail={setMegaEmail}
                   password={megaPassword}

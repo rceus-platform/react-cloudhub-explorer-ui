@@ -33,7 +33,7 @@ describe("ThumbnailUpload Component", () => {
         const { container } = render(<ThumbnailUpload selectedFile={null} onFileSelect={mockOnFileSelect} />);
         const input = container.querySelector('input[type="file"]') as HTMLInputElement;
         const file = new File([""], "test.jpg", { type: "image/jpeg" });
-        
+
         fireEvent.change(input, { target: { files: [file] } });
         expect(mockOnFileSelect).toHaveBeenCalledWith(file);
     });
@@ -42,7 +42,7 @@ describe("ThumbnailUpload Component", () => {
         const { container } = render(<ThumbnailUpload selectedFile={null} onFileSelect={mockOnFileSelect} />);
         const dropZone = container.firstChild as HTMLElement;
         const file = new File([""], "test.jpg", { type: "image/jpeg" });
-        
+
         const dragOverEvent = new MouseEvent("dragover", { bubbles: true });
         fireEvent(dropZone, dragOverEvent);
         expect(dropZone.style.borderColor).toBe("var(--accent-color)");
@@ -59,7 +59,7 @@ describe("ThumbnailUpload Component", () => {
     it("resets border color on drag leave", () => {
         const { container } = render(<ThumbnailUpload selectedFile={null} onFileSelect={mockOnFileSelect} />);
         const dropZone = container.firstChild as HTMLElement;
-        
+
         fireEvent.dragOver(dropZone);
         fireEvent.dragLeave(dropZone);
         expect(dropZone.style.borderColor).toBe("rgba(255, 255, 255, 0.2)");
@@ -69,7 +69,7 @@ describe("ThumbnailUpload Component", () => {
         const { container } = render(<ThumbnailUpload selectedFile={null} onFileSelect={mockOnFileSelect} />);
         const dropZone = container.firstChild as HTMLElement;
         const input = container.querySelector('input[type="file"]') as HTMLInputElement;
-        
+
         const clickSpy = vi.spyOn(input, "click");
         fireEvent.click(dropZone);
         expect(clickSpy).toHaveBeenCalled();

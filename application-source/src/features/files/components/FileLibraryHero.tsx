@@ -52,7 +52,7 @@ export const FileLibraryHero: React.FC<FileLibraryHeroProps> = ({
                 >
                     {isLoading ? "Synchronizing" : "Exploring Library"}
                 </motion.span>
- 
+
                 <h1 style={{
                     fontSize: "clamp(32px, 6vw, 56px)",
                     fontWeight: 800,

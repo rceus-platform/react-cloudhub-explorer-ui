@@ -26,11 +26,11 @@ export const FileLibrary: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { token } = useAuth();
-    
+
     // Initialize state from URL if possible to avoid cascading renders in useEffect
     const [history, setHistory] = useState<FolderState[]>(() => {
         const params = new URLSearchParams(location.search);
-        
+
         // Try to recover from sessionStorage using current path as key
         const currentPath = location.pathname;
         const storedHistory = sessionStorage.getItem(`history:${currentPath}`);
@@ -41,18 +41,18 @@ export const FileLibrary: React.FC = () => {
                 console.error("Failed to parse history from sessionStorage", e);
             }
         }
-        
+
         // Fallback for single folder params
         const fId = params.get("folder_id");
         const fName = params.get("folder_name");
-        
+
         const base = { id: "root", name: "Home" };
         if (fId && fName) {
             return [base, { id: fId, name: fName }];
         }
         return [base];
     });
-    
+
     const [columnCount, setColumnCount] = useState(6);
 
     // Synchronize URL with folder navigation history
@@ -63,7 +63,7 @@ export const FileLibrary: React.FC = () => {
             .replace(/%20/g, "-")
         ).join("/");
         const targetUrl = `/${path}`;
-        
+
         // Persist history to sessionStorage for the target path
         sessionStorage.setItem(`history:${targetUrl}`, JSON.stringify(history));
 
@@ -74,7 +74,7 @@ export const FileLibrary: React.FC = () => {
 
     const currentFolder = history[history.length - 1];
     const { data, isLoading, error, refresh, isRefreshing } = useFiles(currentFolder.id);
-    
+
     // Memoize files retrieval to satisfy hook dependency rules
     const files = useMemo(() => data?.files ?? [], [data?.files]);
 
@@ -118,7 +118,7 @@ export const FileLibrary: React.FC = () => {
             const breadcrumbs = history.slice(1).map(h => encodeURIComponent(h.name)).join("/");
             const path = breadcrumbs ? `${breadcrumbs}/${encodeURIComponent(file.name)}` : encodeURIComponent(file.name);
             const playerUrl = `/player/${provider}/${fileId}/${path}?folder_id=${encodeURIComponent(currentFolder.id)}&folder_name=${encodeURIComponent(currentFolder.name)}`;
-            
+
             navigate(playerUrl);
         }
     };
@@ -132,27 +132,27 @@ export const FileLibrary: React.FC = () => {
 
     return (
         <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-            <FileLibraryHeader 
-                history={history} 
-                columnCount={columnCount} 
-                onBreadcrumbClick={(i) => setHistory(history.slice(0, i + 1))} 
-                onColumnCountChange={setColumnCount} 
+            <FileLibraryHeader
+                history={history}
+                columnCount={columnCount}
+                onBreadcrumbClick={(i) => setHistory(history.slice(0, i + 1))}
+                onColumnCountChange={setColumnCount}
                 onRefresh={refresh}
                 isRefreshing={isRefreshing}
             />
 
             <main className="container" style={{ paddingBottom: "100px" }}>
-                <FileLibraryHero 
-                    title={currentFolder.name} 
-                    itemCount={files.length} 
-                    isLoading={isLoading} 
+                <FileLibraryHero
+                    title={currentFolder.name}
+                    itemCount={files.length}
+                    isLoading={isLoading}
                 />
 
-                <div 
-                    className="file-grid" 
+                <div
+                    className="file-grid"
                     data-testid="skeleton-grid"
-                    style={{ 
-                        display: "grid", 
+                    style={{
+                        display: "grid",
                         gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
                         gap: "32px",
                         width: "100%",
@@ -165,10 +165,10 @@ export const FileLibrary: React.FC = () => {
                         ))
                     ) : (
                         sortedFiles.map((file, index) => (
-                            <FileCard 
-                                key={index} 
-                                file={file} 
-                                onClick={() => handleClick(file)} 
+                            <FileCard
+                                key={index}
+                                file={file}
+                                onClick={() => handleClick(file)}
                             />
                         ))
                     )}

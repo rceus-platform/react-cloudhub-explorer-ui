@@ -32,7 +32,7 @@ describe("Viewer Page", () => {
         localStorage.setItem("access_token", "test-token");
 
         render(<Viewer />);
-        
+
         expect(screen.getByText("movie.mp4")).toBeDefined();
         const source = document.querySelector("source");
         expect(source?.src).toContain("provider=mega");
@@ -45,7 +45,7 @@ describe("Viewer Page", () => {
         (useSearchParams as Mock).mockReturnValue([mockParams]);
 
         render(<Viewer />);
-        
+
         const source = document.querySelector("source");
         expect(source?.src).not.toContain("token=");
     });

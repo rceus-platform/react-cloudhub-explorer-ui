@@ -74,15 +74,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: 'admin', password: passcode }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Invalid credentials');
       }
-      
+
       const data = await response.json();
       localStorage.setItem('access_token', data.access_token);
       setToken(data.access_token);
-      
+
       setIsUnlocked(true);
       setError(null);
       sessionStorage.setItem('site_unlocked', 'true');
@@ -101,15 +101,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password: passcode }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Invalid credentials');
       }
-      
+
       const data = await response.json();
       localStorage.setItem('access_token', data.access_token);
       setToken(data.access_token);
-      
+
       setIsUnlocked(true);
       setError(null);
       sessionStorage.setItem('site_unlocked', 'true');
@@ -122,16 +122,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      isUnlocked, 
+    <AuthContext.Provider value={{
+      isUnlocked,
       token,
-      unlock, 
+      unlock,
       login,
-      error, 
-      connectedAccounts, 
-      isLoadingAccounts, 
-      refreshAccounts, 
-      logoutAccount 
+      error,
+      connectedAccounts,
+      isLoadingAccounts,
+      refreshAccounts,
+      logoutAccount
     }}>
       {children}
     </AuthContext.Provider>

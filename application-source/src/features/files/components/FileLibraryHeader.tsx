@@ -32,19 +32,19 @@ export const FileLibraryHeader: React.FC<FileLibraryHeaderProps> = ({
 
     return (
         <header className="sticky-header" style={{ height: "72px", display: "flex", alignItems: "center" }}>
-            <div className="container" style={{ 
+            <div className="container" style={{
                 width: "100%",
-                display: "flex", 
-                alignItems: "center", 
-                justifyContent: "space-between" 
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between"
             }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-                    <div 
+                    <div
                         onClick={() => onBreadcrumbClick(0)}
-                        style={{ 
-                            fontSize: "18px", 
-                            fontWeight: 800, 
-                            letterSpacing: "-1px", 
+                        style={{
+                            fontSize: "18px",
+                            fontWeight: 800,
+                            letterSpacing: "-1px",
                             cursor: "pointer",
                             color: "var(--text-primary)"
                         }}
@@ -56,10 +56,10 @@ export const FileLibraryHeader: React.FC<FileLibraryHeaderProps> = ({
                         {history.map((h, i) => (
                             <React.Fragment key={i}>
                                 {i > 0 && <FaChevronRight style={{ fontSize: "8px", opacity: 0.3 }} />}
-                                <span 
+                                <span
                                     onClick={() => onBreadcrumbClick(i)}
-                                    style={{ 
-                                        cursor: "pointer", 
+                                    style={{
+                                        cursor: "pointer",
                                         color: i === history.length - 1 ? "var(--text-primary)" : "var(--text-secondary)",
                                         fontWeight: i === history.length - 1 ? 600 : 500,
                                         transition: "all 0.2s",
@@ -78,26 +78,26 @@ export const FileLibraryHeader: React.FC<FileLibraryHeaderProps> = ({
                 <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "16px", paddingRight: "24px", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
                         <Grid size={14} style={{ opacity: 0.4 }} />
-                        <input 
-                            type="range" 
-                            min="2" 
-                            max="6" 
-                            step="1" 
-                            value={columnCount} 
+                        <input
+                            type="range"
+                            min="2"
+                            max="6"
+                            step="1"
+                            value={columnCount}
                             onChange={(e) => onColumnCountChange(parseInt(e.target.value))}
-                            style={{ 
-                                appearance: "none", width: "80px", height: "3px", 
+                            style={{
+                                appearance: "none", width: "80px", height: "3px",
                                 background: "rgba(255,255,255,0.1)", borderRadius: "2px",
                                 outline: "none", cursor: "pointer"
                             }}
                         />
                     </div>
 
-                    <button 
+                    <button
                         onClick={onRefresh}
                         className="premium-button secondary"
-                        style={{ 
-                            padding: "8px", height: "36px", width: "36px", 
+                        style={{
+                            padding: "8px", height: "36px", width: "36px",
                             justifyContent: "center",
                             opacity: isRefreshing ? 0.5 : 1,
                             pointerEvents: isRefreshing ? "none" : "auto"
@@ -107,7 +107,7 @@ export const FileLibraryHeader: React.FC<FileLibraryHeaderProps> = ({
                         <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
                     </button>
 
-                    <button 
+                    <button
                         onClick={() => setIsAccountManagerOpen(true)}
                         className="premium-button"
                         style={{ padding: "8px 16px", height: "36px" }}
@@ -118,9 +118,9 @@ export const FileLibraryHeader: React.FC<FileLibraryHeaderProps> = ({
                 </div>
             </div>
 
-            <AccountManager 
-                isOpen={isAccountManagerOpen} 
-                onClose={() => setIsAccountManagerOpen(false)} 
+            <AccountManager
+                isOpen={isAccountManagerOpen}
+                onClose={() => setIsAccountManagerOpen(false)}
             />
         </header>
     );

@@ -29,15 +29,15 @@ export const ThumbnailCapture: React.FC<ThumbnailCaptureProps> = ({
                 <span>Timestamp</span>
                 <span>{Math.floor(timestamp / 60)}:{String(timestamp % 60).padStart(2, "0")}</span>
             </div>
-            <input 
-                type="range" 
-                min="1" 
-                max={duration} 
+            <input
+                type="range"
+                min="1"
+                max={duration}
                 value={timestamp}
                 onChange={(e) => onTimestampChange(parseInt(e.target.value))}
                 style={{ width: "100%", accentColor: "var(--accent-color)" }}
             />
-            <button 
+            <button
                 onClick={onPreview}
                 disabled={loading}
                 style={{

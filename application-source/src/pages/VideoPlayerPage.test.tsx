@@ -79,7 +79,7 @@ describe("VideoPlayerPage", () => {
     it("handles automatic next video transition", () => {
         render(<VideoPlayerPage />);
         fireEvent.click(screen.getByText("End Video"));
-        
+
         // Video B is at index 1, so it should navigate to Video C (index 2)
         expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining("/player/gdrive/v2/Movies/Action/Video%20C.mp4"));
     });
@@ -87,7 +87,7 @@ describe("VideoPlayerPage", () => {
     it("navigates back to folder correctly", () => {
         render(<VideoPlayerPage />);
         fireEvent.click(screen.getByText("Back to Action"));
-        
+
         expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining("/Movies/Action?folder_id=f1"));
     });
 
@@ -95,14 +95,14 @@ describe("VideoPlayerPage", () => {
         render(<VideoPlayerPage />);
         // Clicking Video A in sidebar (index 0)
         fireEvent.click(screen.getByText("Video A.mp4"));
-        
+
         expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining("/player/gdrive/v0/Movies/Action/Video%20A.mp4"));
     });
 
     it("handles thumbnail update callback", () => {
         render(<VideoPlayerPage />);
         fireEvent.click(screen.getByText("Change Thumbnail"));
-        
+
         // ThumbnailModal is rendered, but it's a mock. We just need to check if it's there.
         // If we want to test the onUpdate callback, we should pass it to the mock and trigger it.
         // But the onUpdate in VideoPlayerPage is currently a no-op: () => {}
@@ -121,14 +121,14 @@ describe("VideoPlayerPage", () => {
 
         render(<VideoPlayerPage />);
         fireEvent.click(screen.getByText("End Video"));
-        
+
         expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining("/player/mega/v2/Movies/Action/Video%20B.mp4"));
     });
 
     it("updates current time on timestamp update", () => {
         render(<VideoPlayerPage />);
         fireEvent.click(screen.getByText("Update Time"));
-        
+
         // Open modal to see if it uses the updated time
         fireEvent.click(screen.getByText("Change Thumbnail"));
         // Since ThumbnailModal is a mock, we check if it was called with new props if we were testing props

@@ -91,10 +91,10 @@ const VideoPlayerPage: React.FC = () => {
                     <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 500, opacity: 0.9, flex: 1 }}>{fileName}</h2>
                 </header>
 
-                <VideoPlayer 
-                    fileId={fileId} 
-                    provider={provider} 
-                    fileName={fileName} 
+                <VideoPlayer
+                    fileId={fileId}
+                    provider={provider}
+                    fileName={fileName}
                     onEnded={handleNext}
                     onTimestampUpdate={(t) => setCurrentTime(t)}
                 />
@@ -150,7 +150,7 @@ const VideoPlayerPage: React.FC = () => {
 
             {/* Thumbnail Modal Overlay */}
             {isThumbnailModalOpen && (
-                <ThumbnailModal 
+                <ThumbnailModal
                     file={{ ...files.find(f => f.ids[provider] === fileId) as FileItem, duration: currentTime }}
                     provider={provider}
                     fileId={fileId}

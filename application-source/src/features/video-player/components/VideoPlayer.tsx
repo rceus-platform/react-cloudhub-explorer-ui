@@ -22,8 +22,8 @@ interface VideoPlayerProps {
 }
 
 /** Core playback component with persistent state management and progress tracking */
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
-    provider, fileId, fileName, onEnded, onTimestampUpdate 
+export const VideoPlayer: React.FC<VideoPlayerProps> = ({
+    provider, fileId, fileName, onEnded, onTimestampUpdate
 }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const isResumeLoaded = useRef(false);
@@ -48,7 +48,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     /** Synchronize current time with backend periodically */
     const handleTimeUpdate = () => {
         if (!videoRef.current || !fileId || !isResumeLoaded.current) return;
-        
+
         const currentTime = videoRef.current.currentTime;
         if (onTimestampUpdate) onTimestampUpdate(currentTime);
 
@@ -59,14 +59,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
 
     const isImage = fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/i);
-    
+
     if (isImage) {
         return (
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "black", overflow: "hidden" }}>
-                <img 
-                    src={streamUrl} 
+                <img
+                    src={streamUrl}
                     alt={fileName}
-                    style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} 
+                    style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                 />
             </div>
         );

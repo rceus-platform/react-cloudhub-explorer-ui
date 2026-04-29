@@ -37,7 +37,7 @@ export const useAccountManager = () => {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data === 'google-login-success') {
-        console.log('Google login successful, refreshing accounts...');
+        console.info('Google login successful, refreshing accounts...');
         refreshAccounts();
       }
     };
@@ -82,6 +82,23 @@ export const useAccountManager = () => {
   /** Toggle the visibility of the MEGA add form */
   const toggleMegaForm = () => setIsAddingMega(prev => !prev);
 
+  /** Trigger background thumbnail synchronization */
+  const [isSyncing, setIsSyncing] = useState(false);
+  const handleSyncThumbnails = async () => {
+    setIsSyncing(true);
+    setError(null);
+    try {
+      await apiClient.post('/accounts/sync', {});
+      // Show temporary success state or just rely on console
+      console.info('Thumbnail sync triggered');
+    } catch (err) {
+      console.error('Failed to start thumbnail sync:', err);
+      setError('Failed to start thumbnail synchronization.');
+    } finally {
+      setTimeout(() => setIsSyncing(false), 2000); // Visual feedback duration
+    }
+  };
+
   return {
     connectedAccounts,
     isLoadingAccounts,
@@ -97,6 +114,8 @@ export const useAccountManager = () => {
     formatBytes,
     handleAddGDrive,
     handleAddMega,
-    toggleMegaForm
+    toggleMegaForm,
+    handleSyncThumbnails,
+    isSyncing
   };
 };

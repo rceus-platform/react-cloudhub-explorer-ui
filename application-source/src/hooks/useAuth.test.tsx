@@ -20,9 +20,9 @@ describe("useAuth Hook", () => {
     it("should throw error when used outside AuthProvider", () => {
         // Suppress console.error for the expected error
         const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-        
+
         expect(() => renderHook(() => useAuth())).toThrow("useAuth must be used within an AuthProvider");
-        
+
         consoleSpy.mockRestore();
     });
 
@@ -32,7 +32,7 @@ describe("useAuth Hook", () => {
         );
 
         const { result } = renderHook(() => useAuth(), { wrapper });
-        
+
         expect(result.current).toBeDefined();
         expect(result.current.isUnlocked).toBeDefined();
     });

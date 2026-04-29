@@ -71,7 +71,7 @@ describe("useFiles Hook", () => {
     it("should force refresh data when refresh is called", async () => {
         const initialData = { folder_id: "root", files: [{ name: "A" }] };
         const freshData = { folder_id: "root", files: [{ name: "B" }] };
-        
+
         (fetchFiles as Mock).mockResolvedValueOnce(initialData).mockResolvedValueOnce(freshData);
 
         const { result } = renderHook(() => useFiles("root"), { wrapper });

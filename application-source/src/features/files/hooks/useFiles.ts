@@ -43,6 +43,7 @@ export function useFiles(folderId: string) {
         staleTime: 30 * 60 * 1000,
         gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
         refetchOnWindowFocus: false,
+        refetchInterval: 15000, // Poll every 15s to pick up background-generated thumbnails
     });
 
     /** Manual trigger to bypass all caches and force-refresh from cloud providers */

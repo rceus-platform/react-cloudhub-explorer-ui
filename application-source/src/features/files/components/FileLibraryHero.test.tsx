@@ -19,7 +19,7 @@ import { FileLibraryHero } from "./FileLibraryHero";
 describe("FileLibraryHero Component", () => {
     it("renders title and item count correctly", () => {
         render(<FileLibraryHero title="Movies" itemCount={120} isLoading={false} />);
-        
+
         expect(screen.getByText("Movies")).toBeDefined();
         expect(screen.getByText("120 media assets available")).toBeDefined();
         expect(screen.getByText("Library Ready")).toBeDefined();
@@ -27,7 +27,7 @@ describe("FileLibraryHero Component", () => {
 
     it("shows loading state correctly", () => {
         render(<FileLibraryHero title="Home" itemCount={0} isLoading={true} />);
-        
+
         expect(screen.getByText("Synchronizing")).toBeDefined();
         expect(screen.getByText("Fetching cloud data...")).toBeDefined();
     });

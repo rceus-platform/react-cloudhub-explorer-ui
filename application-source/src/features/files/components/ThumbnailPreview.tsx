@@ -17,12 +17,22 @@ interface ThumbnailPreviewProps {
     previewUrl: string | null;
     selectedFile: File | null;
     fallbackUrl: string;
+    videoUrl?: string | null;
+    timestamp?: number;
 }
 
 /** Visual preview of the pending thumbnail update */
-export const ThumbnailPreview: React.FC<ThumbnailPreviewProps> = ({ 
-    loading, previewUrl, selectedFile, fallbackUrl 
+export const ThumbnailPreview: React.FC<ThumbnailPreviewProps> = ({
+    loading, previewUrl, selectedFile, fallbackUrl, videoUrl, timestamp
 }) => {
+    const videoRef = React.useRef<HTMLVideoElement>(null);
+
+    React.useEffect(() => {
+        if (videoRef.current && timestamp !== undefined) {
+            videoRef.current.currentTime = timestamp;
+        }
+    }, [timestamp]);
+
     return (
         <div style={{
             width: "100%",
@@ -41,15 +51,22 @@ export const ThumbnailPreview: React.FC<ThumbnailPreviewProps> = ({
                     <FaSpinner className="spinner" style={{ color: "white", fontSize: "32px" }} />
                 </div>
             )}
-            
+
             {selectedFile ? (
-                <img 
-                    src={URL.createObjectURL(selectedFile)} 
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                <img
+                    src={URL.createObjectURL(selectedFile)}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+            ) : videoUrl ? (
+                <video
+                    ref={videoRef}
+                    src={videoUrl}
+                    crossOrigin="anonymous"
+                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
                 />
             ) : (
-                <img 
-                    src={previewUrl || fallbackUrl} 
+                <img
+                    src={previewUrl || fallbackUrl}
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     key={previewUrl}
                 />

@@ -20,7 +20,7 @@ import type { Account } from "../../../context/AuthContext";
 describe("AccountCard Component", () => {
     const mockFormatBytes = vi.fn((b) => `${b} bytes`);
     const mockOnDisconnect = vi.fn();
-    
+
     const mockAccount: Account = {
         id: 1,
         email: "test@example.com",
@@ -32,10 +32,10 @@ describe("AccountCard Component", () => {
 
     it("renders account information correctly", () => {
         render(
-            <AccountCard 
-                account={mockAccount} 
-                formatBytes={mockFormatBytes} 
-                onDisconnect={mockOnDisconnect} 
+            <AccountCard
+                account={mockAccount}
+                formatBytes={mockFormatBytes}
+                onDisconnect={mockOnDisconnect}
             />
         );
 
@@ -46,10 +46,10 @@ describe("AccountCard Component", () => {
 
     it("displays storage usage and percentage", () => {
         render(
-            <AccountCard 
-                account={mockAccount} 
-                formatBytes={mockFormatBytes} 
-                onDisconnect={mockOnDisconnect} 
+            <AccountCard
+                account={mockAccount}
+                formatBytes={mockFormatBytes}
+                onDisconnect={mockOnDisconnect}
             />
         );
 
@@ -60,10 +60,10 @@ describe("AccountCard Component", () => {
     it("shows expired status when inactive", () => {
         const inactiveAccount = { ...mockAccount, is_active: false };
         render(
-            <AccountCard 
-                account={inactiveAccount} 
-                formatBytes={mockFormatBytes} 
-                onDisconnect={mockOnDisconnect} 
+            <AccountCard
+                account={inactiveAccount}
+                formatBytes={mockFormatBytes}
+                onDisconnect={mockOnDisconnect}
             />
         );
 
@@ -72,10 +72,10 @@ describe("AccountCard Component", () => {
 
     it("calls onDisconnect with account ID when button clicked", () => {
         render(
-            <AccountCard 
-                account={mockAccount} 
-                formatBytes={mockFormatBytes} 
-                onDisconnect={mockOnDisconnect} 
+            <AccountCard
+                account={mockAccount}
+                formatBytes={mockFormatBytes}
+                onDisconnect={mockOnDisconnect}
             />
         );
 

@@ -21,12 +21,12 @@ describe("ThumbnailCapture Component", () => {
 
     it("renders correctly and shows formatted time", () => {
         render(
-            <ThumbnailCapture 
-                timestamp={125} 
-                duration={300} 
-                loading={false} 
-                onTimestampChange={mockOnTimestampChange} 
-                onPreview={mockOnPreview} 
+            <ThumbnailCapture
+                timestamp={125}
+                duration={300}
+                loading={false}
+                onTimestampChange={mockOnTimestampChange}
+                onPreview={mockOnPreview}
             />
         );
 
@@ -35,12 +35,12 @@ describe("ThumbnailCapture Component", () => {
 
     it("triggers onTimestampChange when slider moves", () => {
         render(
-            <ThumbnailCapture 
-                timestamp={125} 
-                duration={300} 
-                loading={false} 
-                onTimestampChange={mockOnTimestampChange} 
-                onPreview={mockOnPreview} 
+            <ThumbnailCapture
+                timestamp={125}
+                duration={300}
+                loading={false}
+                onTimestampChange={mockOnTimestampChange}
+                onPreview={mockOnPreview}
             />
         );
 
@@ -51,12 +51,12 @@ describe("ThumbnailCapture Component", () => {
 
     it("triggers onPreview when button is clicked", () => {
         render(
-            <ThumbnailCapture 
-                timestamp={125} 
-                duration={300} 
-                loading={false} 
-                onTimestampChange={mockOnTimestampChange} 
-                onPreview={mockOnPreview} 
+            <ThumbnailCapture
+                timestamp={125}
+                duration={300}
+                loading={false}
+                onTimestampChange={mockOnTimestampChange}
+                onPreview={mockOnPreview}
             />
         );
 
@@ -66,12 +66,12 @@ describe("ThumbnailCapture Component", () => {
 
     it("disables button when loading", () => {
         render(
-            <ThumbnailCapture 
-                timestamp={125} 
-                duration={300} 
-                loading={true} 
-                onTimestampChange={mockOnTimestampChange} 
-                onPreview={mockOnPreview} 
+            <ThumbnailCapture
+                timestamp={125}
+                duration={300}
+                loading={true}
+                onTimestampChange={mockOnTimestampChange}
+                onPreview={mockOnPreview}
             />
         );
 

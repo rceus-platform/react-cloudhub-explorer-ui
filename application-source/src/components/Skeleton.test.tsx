@@ -20,7 +20,7 @@ describe("Skeleton Component", () => {
     it("renders with custom dimensions", () => {
         const { container } = render(<Skeleton width="100px" height="50px" borderRadius="10px" />);
         const div = container.firstChild as HTMLElement;
-        
+
         expect(div.style.width).toBe("100px");
         expect(div.style.height).toBe("50px");
         expect(div.style.borderRadius).toBe("10px");

@@ -22,7 +22,7 @@ export const fetchFiles = async (folderId: string = "root", refresh: boolean = f
 export const updateThumbnail = async (
     fileId: string, 
     provider: string, 
-    data: { timestamp?: number; file?: File }
+    data: { timestamp?: number; file?: File; duration?: number }
 ) => {
     // Mode A: Capture from timestamp
     if (data.timestamp !== undefined) {
@@ -33,6 +33,8 @@ export const updateThumbnail = async (
     if (data.file) {
         const formData = new FormData();
         formData.append("file", data.file);
-        return apiClient.patch(`/files/${fileId}/thumbnail?provider=${provider}`, formData);
+        let url = `/files/${fileId}/thumbnail?provider=${provider}`;
+        if (data.duration !== undefined) url += `&duration=${data.duration}`;
+        return apiClient.patch(url, formData);
     }
 };

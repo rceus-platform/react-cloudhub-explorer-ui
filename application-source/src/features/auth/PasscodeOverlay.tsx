@@ -1,6 +1,6 @@
 /**
  * PasscodeOverlay Component
- * 
+ *
  * Responsibilities:
  * - Provide a secure entry point for the application
  * - Support both Quick PIN access and full Admin credentials
@@ -25,7 +25,7 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-  
+
   const inputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
 
   const performPinSubmit = useCallback(async (pinString: string) => {
@@ -79,7 +79,7 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
 
   return (
     <div className={styles.overlay}>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className={styles.card}
@@ -95,13 +95,13 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
         </div>
 
         <div className={styles.tabs}>
-          <button 
+          <button
             className={`${styles.tab} ${mode === 'pin' ? styles.activeTab : ''}`}
             onClick={() => setMode('pin')}
           >
             <Hash size={14} /> Quick PIN
           </button>
-          <button 
+          <button
             className={`${styles.tab} ${mode === 'login' ? styles.activeTab : ''}`}
             onClick={() => setMode('login')}
           >
@@ -111,12 +111,12 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
 
         <AnimatePresence mode="wait">
           {mode === 'pin' ? (
-            <motion.form 
+            <motion.form
               key="pin-form"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
-              onSubmit={handlePinSubmit} 
+              onSubmit={handlePinSubmit}
               className={styles.form}
             >
               <div className={styles.pinInputs}>
@@ -141,21 +141,21 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
               </button>
             </motion.form>
           ) : (
-            <motion.form 
+            <motion.form
               key="login-form"
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
-              onSubmit={handleLoginSubmit} 
+              onSubmit={handleLoginSubmit}
               className={styles.form}
             >
               <div className={styles.inputGroup}>
                 <div className={styles.inputIcon}>
                   <UserIcon size={18} />
                 </div>
-                <input 
-                  type="text" 
-                  placeholder="Username" 
+                <input
+                  type="text"
+                  placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className={styles.textInput}
@@ -167,9 +167,9 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
                 <div className={styles.inputIcon}>
                   <Key size={18} />
                 </div>
-                <input 
-                  type="password" 
-                  placeholder="Password" 
+                <input
+                  type="password"
+                  placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className={styles.textInput}
@@ -187,9 +187,9 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
             </motion.form>
           )}
         </AnimatePresence>
-        
+
         {error && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             className={styles.errorMsg}

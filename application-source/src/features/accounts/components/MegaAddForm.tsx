@@ -35,7 +35,7 @@ export const MegaAddForm: React.FC<MegaAddFormProps> = ({
   onSubmit
 }) => {
   return (
-    <motion.form 
+    <motion.form
       initial={{ height: 0, opacity: 0 }}
       animate={{ height: 'auto', opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
@@ -44,9 +44,9 @@ export const MegaAddForm: React.FC<MegaAddFormProps> = ({
     >
       <div className="input-group">
         <Mail size={16} />
-        <input 
-          type="email" 
-          placeholder="MEGA Email" 
+        <input
+          type="email"
+          placeholder="MEGA Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -54,9 +54,9 @@ export const MegaAddForm: React.FC<MegaAddFormProps> = ({
       </div>
       <div className="input-group">
         <LogOut size={16} style={{ transform: 'rotate(90deg)' }} />
-        <input 
-          type="password" 
-          placeholder="MEGA Password" 
+        <input
+          type="password"
+          placeholder="MEGA Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required

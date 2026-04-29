@@ -54,7 +54,7 @@ describe("FileLibrary Component", () => {
 
         render(<FileLibrary />);
         expect(screen.getByText("Folder A")).toBeDefined();
-        
+
         fireEvent.click(screen.getByText("Folder A"));
         await waitFor(() => {
             expect(mockNavigate).toHaveBeenCalled();

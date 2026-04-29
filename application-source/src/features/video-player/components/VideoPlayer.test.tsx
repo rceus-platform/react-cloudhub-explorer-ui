@@ -31,11 +31,11 @@ describe("VideoPlayer Component", () => {
 
     it("renders video element with correct stream URL", () => {
         render(
-            <VideoPlayer 
-                provider="gdrive" 
-                fileId="123" 
-                fileName="movie.mp4" 
-                onEnded={mockOnEnded} 
+            <VideoPlayer
+                provider="gdrive"
+                fileId="123"
+                fileName="movie.mp4"
+                onEnded={mockOnEnded}
             />
         );
 
@@ -48,11 +48,11 @@ describe("VideoPlayer Component", () => {
         (getVideoState as Mock).mockResolvedValue({ current_time: 42, duration: 100 });
 
         render(
-            <VideoPlayer 
-                provider="gdrive" 
-                fileId="123" 
-                fileName="movie.mp4" 
-                onEnded={mockOnEnded} 
+            <VideoPlayer
+                provider="gdrive"
+                fileId="123"
+                fileName="movie.mp4"
+                onEnded={mockOnEnded}
             />
         );
 
@@ -63,22 +63,22 @@ describe("VideoPlayer Component", () => {
         (getVideoState as Mock).mockResolvedValue({ current_time: 0, duration: 100 });
 
         const { container } = render(
-            <VideoPlayer 
-                provider="gdrive" 
-                fileId="123" 
-                fileName="movie.mp4" 
-                onEnded={mockOnEnded} 
+            <VideoPlayer
+                provider="gdrive"
+                fileId="123"
+                fileName="movie.mp4"
+                onEnded={mockOnEnded}
             />
         );
 
         // Wait for getVideoState to resolve and component state to update
         await waitFor(() => expect(getVideoState).toHaveBeenCalledWith("123"));
-        
+
         // Small delay to ensure the .then() in useEffect has executed
         await new Promise(resolve => setTimeout(resolve, 0));
 
         const video = container.querySelector("video")!;
-        
+
         Object.defineProperty(video, "duration", { value: 100 });
         Object.defineProperty(video, "currentTime", { value: 5, writable: true });
 
@@ -89,11 +89,11 @@ describe("VideoPlayer Component", () => {
 
     it("does nothing in useEffect if fileId is missing", () => {
         render(
-            <VideoPlayer 
-                provider="gdrive" 
-                fileId="" 
-                fileName="movie.mp4" 
-                onEnded={mockOnEnded} 
+            <VideoPlayer
+                provider="gdrive"
+                fileId=""
+                fileName="movie.mp4"
+                onEnded={mockOnEnded}
             />
         );
 
@@ -102,11 +102,11 @@ describe("VideoPlayer Component", () => {
 
     it("renders image correctly when fileName is an image", () => {
         render(
-            <VideoPlayer 
-                provider="gdrive" 
-                fileId="img123" 
-                fileName="photo.jpg" 
-                onEnded={mockOnEnded} 
+            <VideoPlayer
+                provider="gdrive"
+                fileId="img123"
+                fileName="photo.jpg"
+                onEnded={mockOnEnded}
             />
         );
 

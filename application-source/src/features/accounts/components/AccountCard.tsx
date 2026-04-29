@@ -12,10 +12,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  LogOut, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  LogOut,
+  CheckCircle2,
+  XCircle,
   HardDrive
 } from 'lucide-react';
 import { SiGooglecloud, SiMega } from 'react-icons/si';
@@ -28,15 +28,15 @@ interface AccountCardProps {
 }
 
 /** Individual card displaying account health and storage metrics */
-export const AccountCard: React.FC<AccountCardProps> = ({ 
-  account, 
-  formatBytes, 
-  onDisconnect 
+export const AccountCard: React.FC<AccountCardProps> = ({
+  account,
+  formatBytes,
+  onDisconnect
 }) => {
   const usagePercentage = Math.round((account.storage_used / account.storage_total) * 100) || 0;
 
   return (
-    <motion.div 
+    <motion.div
       layout
       className={`account-card glass-premium ${!account.is_active ? 'inactive' : ''}`}
     >
@@ -64,7 +64,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           <span>{usagePercentage}%</span>
         </div>
         <div className="progress-bar-bg">
-          <motion.div 
+          <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${usagePercentage}%` }}
             className="progress-bar-fill"
@@ -73,7 +73,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       </div>
 
       <div className="card-actions">
-        <button 
+        <button
           className="disconnect-btn"
           onClick={() => onDisconnect(account.id)}
         >

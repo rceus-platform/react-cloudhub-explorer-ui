@@ -22,7 +22,7 @@ export const ThumbnailUpload: React.FC<ThumbnailUploadProps> = ({
     selectedFile, onFileSelect
 }) => {
     return (
-        <div 
+        <div
             style={{
                 border: "2px dashed rgba(255,255,255,0.2)",
                 borderRadius: "12px",
@@ -47,10 +47,10 @@ export const ThumbnailUpload: React.FC<ThumbnailUploadProps> = ({
                 {selectedFile ? selectedFile.name : "Click or drag to upload"}
             </div>
             <div style={{ fontSize: "12px", color: "#666" }}>Supports JPG, PNG (Max 5MB)</div>
-            <input 
-                type="file" 
-                id="file-upload" 
-                hidden 
+            <input
+                type="file"
+                id="file-upload"
+                hidden
                 accept="image/*"
                 onChange={(e) => e.target.files && onFileSelect(e.target.files[0])}
             />

@@ -45,7 +45,7 @@ describe("AuthContext", () => {
     it("should unlock correctly with valid passcode", async () => {
         (apiClient.get as Mock).mockResolvedValue([]);
         const { result } = renderHook(() => useAuth(), { wrapper });
-        
+
         // Assuming VITE_SITE_PASSCODE is "8080" based on previous .env check
         await act(async () => {
             const success = result.current.unlock("8080");
@@ -61,7 +61,7 @@ describe("AuthContext", () => {
 
     it("should set error state with invalid passcode", async () => {
         const { result } = renderHook(() => useAuth(), { wrapper });
-        
+
         await act(async () => {
             const success = result.current.unlock("wrong");
             expect(success).toBe(false);
@@ -76,7 +76,7 @@ describe("AuthContext", () => {
         (apiClient.get as Mock).mockResolvedValue(mockAccounts);
 
         const { result } = renderHook(() => useAuth(), { wrapper });
-        
+
         await act(async () => {
             result.current.unlock("8080");
         });
@@ -92,7 +92,7 @@ describe("AuthContext", () => {
         (apiClient.get as Mock).mockResolvedValue(mockAccounts);
 
         const { result } = renderHook(() => useAuth(), { wrapper });
-        
+
         await act(async () => {
             result.current.unlock("8080");
         });
@@ -114,7 +114,7 @@ describe("AuthContext", () => {
         (apiClient.get as Mock).mockRejectedValue(new Error("Network Error"));
 
         const { result } = renderHook(() => useAuth(), { wrapper });
-        
+
         await act(async () => {
             result.current.unlock("8080");
         });
@@ -130,14 +130,14 @@ describe("AuthContext", () => {
         (apiClient.delete as Mock).mockRejectedValue(new Error("Delete Failed"));
 
         const { result } = renderHook(() => useAuth(), { wrapper });
-        
+
         await act(async () => {
             result.current.unlock("8080");
         });
 
         await expect(result.current.logoutAccount(1)).rejects.toThrow("Delete Failed");
         expect(consoleSpy).toHaveBeenCalledWith("Failed to logout account:", expect.any(Error));
-        
+
         consoleSpy.mockRestore();
     });
 });

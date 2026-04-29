@@ -18,24 +18,26 @@ interface SkeletonProps {
     className?: string;
 }
 
-export const Skeleton: React.FC<SkeletonProps> = ({ 
-    width = "100%", 
-    height = "100%", 
+/** Basic pulsing placeholder for loading states */
+export const Skeleton: React.FC<SkeletonProps> = ({
+    width = "100%",
+    height = "100%",
     borderRadius = "8px",
-    className = "" 
+    className = ""
 }) => {
     return (
-        <div 
+        <div
             className={`skeleton-pulse ${className}`}
-            style={{ 
-                width, 
-                height, 
-                borderRadius 
-            }} 
+            style={{
+                width,
+                height,
+                borderRadius
+            }}
         />
     );
 };
 
+/** Pre-defined skeleton layout for FileCard components */
 export const FileCardSkeleton = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <Skeleton height="150px" />

@@ -20,7 +20,7 @@ export default function Viewer() {
     const fileId = params.get("file_id");
     const fileName = params.get("file_name");
 
-    console.log("VIEWER PARAMS:", { provider, fileId });
+    console.debug("VIEWER PARAMS:", { provider, fileId });
 
     const token = localStorage.getItem("access_token") ?? "";
     const streamUrl =
