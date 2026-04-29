@@ -41,9 +41,11 @@ export function useFiles(folderId: string) {
         queryKey: ["files", normalizedFolderId],
         queryFn: () => fetchFiles(normalizedFolderId),
         staleTime: 30 * 60 * 1000,
-        gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
+        // Keep in cache for 1 hour
+        gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
-        refetchInterval: 15000, // Poll every 15s to pick up background-generated thumbnails
+        // Poll every 15s to pick up background-generated thumbnails
+        refetchInterval: 15000,
     });
 
     /** Manual trigger to bypass all caches and force-refresh from cloud providers */

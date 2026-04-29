@@ -1,21 +1,13 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
-
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-}
+/**
+ * App Styles Module
+ *
+ * Responsibilities:
+ * - Provide specific layout and styling for the root App component
+ * - Manage branding elements (hero, logos) and root navigation containers
+ *
+ * Boundaries:
+ * - Does not define global design tokens (managed in index.css)
+ */
 
 .hero {
   position: relative;

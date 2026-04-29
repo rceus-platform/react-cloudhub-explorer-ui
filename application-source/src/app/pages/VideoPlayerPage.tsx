@@ -13,10 +13,10 @@
 import React, { useState } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaImage } from "react-icons/fa";
-import { FileCard, useFiles, ThumbnailModal } from "../features/files";
-import type { FileItem } from "../features/files";
-import { VideoPlayer } from "../features/video-player";
-import { FileCardSkeleton } from "../components/Skeleton";
+import { FileCard, useFiles, ThumbnailModal } from "../../features/files";
+import type { FileItem } from "../../features/files";
+import { VideoPlayer } from "../../features/video-player";
+import { FileCardSkeleton } from "../../components/Skeleton";
 
 /** Theater-style page combining playback, playlist sidebar, and metadata actions */
 const VideoPlayerPage: React.FC = () => {
@@ -72,7 +72,6 @@ const VideoPlayerPage: React.FC = () => {
 
     return (
         <div style={{ display: "flex", height: "100vh", backgroundColor: "#050505", color: "white", overflow: "hidden" }}>
-            {/* Left: Video Player Section (Main) */}
             <div style={{ flex: "0 0 80%", minWidth: 0, display: "flex", flexDirection: "column", position: "relative", backgroundColor: "black", boxShadow: "10px 0 30px rgba(0,0,0,0.5)", zIndex: 2 }}>
                 <header className="glass-panel" style={{
                     position: "absolute", top: 0, left: 0, right: 0, padding: "20px 40px", zIndex: 10,
@@ -111,7 +110,6 @@ const VideoPlayerPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Right: Playlist Sidebar */}
             <aside style={{ flex: "0 0 20%", minWidth: 0, backgroundColor: "rgba(10, 10, 10, 0.8)", backdropFilter: "blur(20px)", borderLeft: "1px solid rgba(255,255,255,0.05)", display: "flex", flexDirection: "column", height: "100%", zIndex: 1 }}>
                 <div style={{ padding: "30px 25px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                     <h3 style={{ margin: 0, color: "white", fontSize: "18px", fontWeight: 600 }}>Up Next</h3>
@@ -148,7 +146,6 @@ const VideoPlayerPage: React.FC = () => {
                 </div>
             </aside>
 
-            {/* Thumbnail Modal Overlay */}
             {isThumbnailModalOpen && (
                 <ThumbnailModal
                     file={{ ...files.find(f => f.ids[provider] === fileId) as FileItem, duration: currentTime }}

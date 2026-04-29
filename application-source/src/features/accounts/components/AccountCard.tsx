@@ -19,7 +19,7 @@ import {
   HardDrive
 } from 'lucide-react';
 import { SiGooglecloud, SiMega } from 'react-icons/si';
-import type { Account } from '../../../context/AuthContext';
+import type { Account } from '../../../app/context/AuthContext';
 
 interface AccountCardProps {
   account: Account;

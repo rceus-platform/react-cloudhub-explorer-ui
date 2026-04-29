@@ -14,11 +14,11 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { AuthProvider } from "./AuthContext";
-import { useAuth } from "../hooks/useAuth";
-import { apiClient } from "../services/apiClient";
+import { useAuth } from "../../hooks/useAuth";
+import { apiClient } from "../../services/apiClient";
 import React from "react";
 
-vi.mock("../services/apiClient", () => ({
+vi.mock("../../services/apiClient", () => ({
     apiClient: {
         get: vi.fn(),
         delete: vi.fn(),

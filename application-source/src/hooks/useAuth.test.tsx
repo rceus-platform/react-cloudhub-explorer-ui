@@ -12,7 +12,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useAuth } from "./useAuth";
-import { AuthProvider } from "../context/AuthContext";
+import { AuthProvider } from "../app/context/AuthContext";
 import React from "react";
 
 /** Main test suite for the useAuth convenience hook */

@@ -17,7 +17,7 @@ import { AuthContext, type Account } from './AuthContext.types';
 export type { Account };
 export { AuthContext };
 
-import { apiClient } from '../services/apiClient';
+import { apiClient } from "../../services/apiClient";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isUnlocked, setIsUnlocked] = useState(() => {

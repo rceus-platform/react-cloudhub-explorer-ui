@@ -10,7 +10,7 @@
  */
 
 import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../app/context/AuthContext';
 
 /** Custom hook to access authentication state and actions */
 export const useAuth = () => {

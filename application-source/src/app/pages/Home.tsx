@@ -10,7 +10,7 @@
  */
 
 import React from "react";
-import { FileLibrary } from "../features/files";
+import { FileLibrary } from "../../features/files";
 
 /** Root page for browsing and managing the cloud file library */
 const Home: React.FC = () => {

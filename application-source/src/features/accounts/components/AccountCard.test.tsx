@@ -14,7 +14,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { AccountCard } from "./AccountCard";
-import type { Account } from "../../../context/AuthContext";
+import type { Account } from '../../../app/context/AuthContext';
 
 /** Main test suite for the individual account status card */
 describe("AccountCard Component", () => {

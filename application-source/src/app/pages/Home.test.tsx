@@ -13,7 +13,7 @@ import { render, screen } from "@testing-library/react";
 import Home from "./Home";
 
 
-vi.mock("../features/files", () => ({
+vi.mock("../../features/files", () => ({
     FileLibrary: () => <div data-testid="file-library">File Library</div>,
 }));
 

@@ -13,8 +13,8 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Viewer from "./pages/Viewer";
 import VideoPlayerPage from "./pages/VideoPlayerPage";
-import { PasscodeOverlay } from "./features/auth/PasscodeOverlay";
-import { useAuth } from "./hooks/useAuth";
+import { PasscodeOverlay } from "../features/auth/PasscodeOverlay";
+import { useAuth } from "../hooks/useAuth";
 
 /** Root application component with core routing configuration */
 export default function App() {

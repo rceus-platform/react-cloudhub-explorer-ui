@@ -16,7 +16,7 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import VideoPlayerPage from "./VideoPlayerPage";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { useFiles } from "../features/files";
+import { useFiles } from "../../features/files";
 
 vi.mock("react-router-dom", () => ({
     useParams: vi.fn(),
@@ -27,8 +27,8 @@ vi.mock("react-router-dom", () => ({
 interface MockFileProps { file: { name: string }; onClick: () => void; }
 interface MockModalProps { isOpen: boolean; }
 
-vi.mock("../features/files", async () => {
-    const actual = await vi.importActual<typeof import("../features/files")>("../features/files");
+vi.mock("../../features/files", async () => {
+    const actual = await vi.importActual<typeof import("../../features/files")>("../../features/files");
     return {
         ...actual,
         useFiles: vi.fn(),
@@ -39,7 +39,7 @@ vi.mock("../features/files", async () => {
 
 interface MockPlayerProps { onEnded: () => void; onTimestampUpdate: (t: number) => void; }
 
-vi.mock("../features/video-player", () => ({
+vi.mock("../../features/video-player", () => ({
     VideoPlayer: ({ onEnded, onTimestampUpdate }: MockPlayerProps) => (
         <div data-testid="video-player">
             <button onClick={onEnded}>End Video</button>

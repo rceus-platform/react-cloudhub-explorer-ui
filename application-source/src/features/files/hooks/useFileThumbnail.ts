@@ -57,12 +57,17 @@ export const useFileThumbnail = (file: FileItem) => {
         ? `${apiBaseUrl}/files/thumbnail?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&v=${file.updated_at}&token=${token}`
         : null;
 
+    const placeholderUrl = isImage 
+        ? `${apiBaseUrl}/assets/placeholder-image.png` 
+        : `${apiBaseUrl}/assets/placeholder-video.png`;
+    
     return {
         provider,
         fileId,
         isImage,
         isVideo,
         thumbnailUrl,
+        placeholderUrl,
         isGenerating,
     };
 };

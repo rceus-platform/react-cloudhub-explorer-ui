@@ -12,16 +12,16 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { render, screen } from "@testing-library/react";
 import App from "./App";
-import { useAuth } from "./hooks/useAuth";
+import { useAuth } from "../hooks/useAuth";
 import { MemoryRouter } from "react-router-dom";
 
 
-vi.mock("./hooks/useAuth", () => ({
+vi.mock("../hooks/useAuth", () => ({
     useAuth: vi.fn(),
 }));
 
 // Mock components to simplify App testing
-vi.mock("./features/auth/PasscodeOverlay", () => ({
+vi.mock("../features/auth/PasscodeOverlay", () => ({
     PasscodeOverlay: () => <div data-testid="passcode-overlay">Passcode Overlay</div>,
 }));
 

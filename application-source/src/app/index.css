@@ -1,3 +1,15 @@
+/**
+ * Global Styles Module
+ *
+ * Responsibilities:
+ * - Define the application's design system and CSS tokens
+ * - Provide global layout utilities and base typography
+ * - Implement high-level aesthetic presets (glassmorphism, dark mode)
+ *
+ * Boundaries:
+ * - Does not contain component-specific styling (managed in CSS modules or inline)
+ */
+
 *,
 *::before,
 *::after {

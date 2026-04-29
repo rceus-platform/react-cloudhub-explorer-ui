@@ -24,7 +24,7 @@ interface FileCardProps {
 /** Premium content card with cinematic hover transitions and metadata focus */
 export const FileCard: React.FC<FileCardProps> = ({ file, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
-    const { provider, isImage, thumbnailUrl } = useFileThumbnail(file);
+    const { provider, isImage, thumbnailUrl, placeholderUrl } = useFileThumbnail(file);
 
     const isFolder = file.type === "folder";
     const progress = file.progress_percentage || 0;
@@ -104,12 +104,19 @@ export const FileCard: React.FC<FileCardProps> = ({ file, onClick }) => {
                                     }}
                                 />
                             ) : (
-                                <div style={{
-                                    position: "absolute", inset: 0, display: "flex",
-                                    alignItems: "center", justifyContent: "center", opacity: 0.2
-                                }}>
-                                    <FaPlay size={32} />
-                                </div>
+                                <motion.img
+                                    key="placeholder"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 0.2 }}
+                                    src={placeholderUrl}
+                                    style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        objectFit: "contain",
+                                        position: "relative",
+                                        zIndex: 1
+                                    }}
+                                />
                             )}
                         </AnimatePresence>
                     )}
