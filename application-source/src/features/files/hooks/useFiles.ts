@@ -60,13 +60,26 @@ export function useFiles(folderId: string) {
 
     // Update query with adaptive polling interval
     useEffect(() => {
+        let pollCount = 0;
+        const MAX_POLLS = 10;
+
         if (isSyncRunning || hasMissingThumbnails) {
             const interval = setInterval(() => {
+                // Stop polling if we reached the limit or if the tab is not visible
+                if (pollCount >= MAX_POLLS || document.hidden) {
+                    if (pollCount >= MAX_POLLS) {
+                        console.warn("[useFiles] Max polls reached for folder, stopping polling.");
+                        clearInterval(interval);
+                    }
+                    return;
+                }
+
+                pollCount++;
                 query.refetch();
-            }, 3000);
+            }, 10000); // 10 seconds
             return () => clearInterval(interval);
         }
-    }, [isSyncRunning, hasMissingThumbnails, query]);
+    }, [isSyncRunning, hasMissingThumbnails, query.refetch]);
 
     /** Manual trigger to bypass all caches and force-refresh from cloud providers */
     const refresh = async () => {
