@@ -81,11 +81,14 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ isOpen, onClose 
             </button>
             <button
               className="refresh-btn"
-              onClick={refreshAccounts}
-              disabled={isLoadingAccounts}
-              title="Sync Accounts"
+              onClick={async () => {
+                await refreshAccounts();
+                await handleSyncThumbnails();
+              }}
+              disabled={isLoadingAccounts || isSyncing}
+              title="Refresh Accounts & Sync Thumbnails"
             >
-              <RefreshCw className={isLoadingAccounts ? 'spin' : ''} size={18} />
+              <RefreshCw className={isLoadingAccounts || isSyncing ? 'spin' : ''} size={18} />
             </button>
             <button className="close-btn" onClick={onClose}>
               <X size={20} />

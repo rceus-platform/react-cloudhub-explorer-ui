@@ -7,6 +7,10 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { ThumbnailModal } from "./ThumbnailModal";
 import type { FileItem } from "../types";
 
+// Mock useAuth
+vi.mock("../../../hooks/useAuth", () => ({
+    useAuth: () => ({ token: "mock-token" }),
+}));
 
 describe("ThumbnailModal Component", () => {
     const mockFile: FileItem = { name: "Video.mp4", type: "file", providers: ["gdrive"], ids: { gdrive: "1" }, duration: 100 };

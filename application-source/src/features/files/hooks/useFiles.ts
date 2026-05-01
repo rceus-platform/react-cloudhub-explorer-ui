@@ -9,14 +9,16 @@
  * - Does not handle navigation or individual file interactions
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchFiles } from "../services/fileService";
 import type { FilesResponse } from "../types";
+import { useSyncStatus } from "../../accounts/hooks/useSyncStatus";
 
 /** Custom hook for retrieval of folder data with optimized caching */
 export function useFiles(folderId: string) {
     const queryClient = useQueryClient();
+    const { data: isSyncRunning } = useSyncStatus();
 
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -44,9 +46,27 @@ export function useFiles(folderId: string) {
         // Keep in cache for 1 hour
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
-        // Poll every 15s to pick up background-generated thumbnails
-        refetchInterval: 15000,
     });
+
+    // Detect if any media file in the current view is still missing a thumbnail
+    const hasMissingThumbnails = useMemo(() => {
+        if (!query.data?.files) return false;
+        return query.data.files.some(f => 
+            f.type === "file" && 
+            !f.updated_at && 
+            /\.(mp4|mkv|mov|avi|wmv|flv|webm|jpg|jpeg|png|webp|heic|gif|bmp)$/i.test(f.name)
+        );
+    }, [query.data?.files]);
+
+    // Update query with adaptive polling interval
+    useEffect(() => {
+        if (isSyncRunning || hasMissingThumbnails) {
+            const interval = setInterval(() => {
+                query.refetch();
+            }, 3000);
+            return () => clearInterval(interval);
+        }
+    }, [isSyncRunning, hasMissingThumbnails, query]);
 
     /** Manual trigger to bypass all caches and force-refresh from cloud providers */
     const refresh = async () => {

@@ -18,7 +18,6 @@ import type { UpdateThumbnailResponse } from "../types";
 import { ThumbnailPreview } from "./ThumbnailPreview";
 import { ThumbnailCapture } from "./ThumbnailCapture";
 import { ThumbnailUpload } from "./ThumbnailUpload";
-import { captureVideoFrame } from "../utils/thumbnailGenerator";
 
 interface ThumbnailModalProps {
     file: FileItem;
@@ -52,29 +51,25 @@ export const ThumbnailModal: React.FC<ThumbnailModalProps> = ({
     const streamUrl = `${apiBaseUrl}/files/stream?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&token=${token}`;
 
     const handlePreview = async () => {
-        // No longer needs server-side processing for preview
         setLoading(true);
-        setTimeout(() => setLoading(false), 200);
+        // The backend /thumbnail endpoint handles timestamp-based previews
+        setTimeout(() => setLoading(false), 500);
     };
 
     const handleSave = async () => {
         setSaving(true);
         try {
-            let fileToUpload: File | undefined;
-
+            let result;
             if (mode === "upload" && selectedFile) {
-                fileToUpload = selectedFile;
+                result = await updateThumbnail(fileId, provider, {
+                    file: selectedFile
+                }) as UpdateThumbnailResponse;
             } else if (mode === "capture") {
-                // Generate thumbnail locally
-                const { blob } = await captureVideoFrame(streamUrl, timestamp);
-                fileToUpload = new File([blob], "thumbnail.jpg", { type: "image/jpeg" });
+                // Pass timestamp to backend for server-side extraction
+                result = await updateThumbnail(fileId, provider, {
+                    timestamp: timestamp
+                }) as UpdateThumbnailResponse;
             }
-
-            const result = await updateThumbnail(fileId, provider, {
-                file: fileToUpload,
-                // Pass duration if we just captured it
-                duration: mode === "capture" ? timestamp : undefined
-            }) as UpdateThumbnailResponse;
 
             if (result?.success) {
                 onUpdate(result.updated_at);
@@ -88,6 +83,9 @@ export const ThumbnailModal: React.FC<ThumbnailModalProps> = ({
     };
 
     const fallbackUrl = `${apiBaseUrl}/files/thumbnail?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&token=${token}`;
+    const previewUrl = mode === "capture" 
+        ? `${fallbackUrl}&timestamp=${timestamp}`
+        : null;
 
     return (
         <div style={{
@@ -117,10 +115,10 @@ export const ThumbnailModal: React.FC<ThumbnailModalProps> = ({
                 <div style={{ padding: "24px", overflowY: "auto" }}>
                     <ThumbnailPreview
                         loading={loading}
-                        previewUrl={null}
+                        previewUrl={previewUrl}
                         selectedFile={selectedFile}
                         fallbackUrl={fallbackUrl}
-                        videoUrl={mode === "capture" ? streamUrl : null}
+                        videoUrl={null}
                         timestamp={timestamp}
                     />
 

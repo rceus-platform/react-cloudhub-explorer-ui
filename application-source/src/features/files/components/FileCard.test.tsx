@@ -12,6 +12,17 @@ vi.mock("react-icons/fa", () => ({
     FaPlay: () => <div data-testid="play-icon" />,
 }));
 
+// Mock useFileThumbnail to avoid AuthContext dependency
+vi.mock("../hooks/useFileThumbnail", () => ({
+    useFileThumbnail: vi.fn(() => ({
+        provider: "gdrive",
+        isImage: false,
+        thumbnailUrl: null,
+        placeholderUrl: "placeholder.png",
+        isGenerating: false
+    }))
+}));
+
 describe("FileCard Component", () => {
     const mockOnClick = vi.fn();
 

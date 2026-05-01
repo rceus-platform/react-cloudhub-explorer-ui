@@ -14,6 +14,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { apiClient } from '../../../services/apiClient';
+import { syncStateManager } from '../utils/syncState';
 
 /** Custom hook for orchestrating account management operations */
 export const useAccountManager = () => {
@@ -89,7 +90,7 @@ export const useAccountManager = () => {
     setError(null);
     try {
       await apiClient.post('/accounts/sync', {});
-      // Show temporary success state or just rely on console
+      syncStateManager.startMonitoring();
       console.info('Thumbnail sync triggered');
     } catch (err) {
       console.error('Failed to start thumbnail sync:', err);
