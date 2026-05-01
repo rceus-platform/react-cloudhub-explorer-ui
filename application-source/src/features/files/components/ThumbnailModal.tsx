@@ -48,7 +48,6 @@ export const ThumbnailModal: React.FC<ThumbnailModalProps> = ({
     if (!isOpen) return null;
 
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-    const streamUrl = `${apiBaseUrl}/files/stream?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&token=${token}`;
 
     const handlePreview = async () => {
         setLoading(true);
