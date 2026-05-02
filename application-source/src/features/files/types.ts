@@ -21,6 +21,7 @@ export interface FileItem {
     width?: number | null;
     height?: number | null;
     updated_at?: number;
+    is_generating?: boolean;
 }
 
 /** API response structure for file listing */

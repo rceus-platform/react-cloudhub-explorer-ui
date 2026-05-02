@@ -164,9 +164,9 @@ export const FileLibrary: React.FC = () => {
                             <FileCardSkeleton key={i} />
                         ))
                     ) : (
-                        sortedFiles.map((file, index) => (
+                        sortedFiles.map((file) => (
                             <FileCard
-                                key={index}
+                                key={`${file.name}-${file.type}-${Object.values(file.ids).join("-")}`}
                                 file={file}
                                 onClick={() => handleClick(file)}
                             />

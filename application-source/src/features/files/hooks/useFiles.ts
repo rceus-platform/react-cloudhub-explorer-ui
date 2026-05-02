@@ -9,7 +9,7 @@
  * - Does not handle navigation or individual file interactions
  */
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchFiles } from "../services/fileService";
 import type { FilesResponse } from "../types";
@@ -46,47 +46,38 @@ export function useFiles(folderId: string) {
         // Keep in cache for 1 hour
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
-    });
+        // Use native refetchInterval for more robust adaptive polling
+        refetchInterval: (query) => {
+            const data = query.state.data;
+            if (!data?.files) return false;
 
-    // Detect if any media file in the current view is still missing a thumbnail
-    const hasMissingThumbnails = useMemo(() => {
-        if (!query.data?.files) return false;
-        return query.data.files.some(f => 
-            f.type === "file" && 
-            !f.updated_at && 
-            /\.(mp4|mkv|mov|avi|wmv|flv|webm|jpg|jpeg|png|webp|heic|gif|bmp)$/i.test(f.name)
-        );
-    }, [query.data?.files]);
+            const hasMissing = data.files.some(f =>
+                f.type === "file" &&
+                (!f.updated_at || f.is_generating) &&
+                /\.(mp4|mkv|mov|avi|wmv|flv|webm|jpg|jpeg|png|webp|heic|gif|bmp)$/i.test(f.name)
+            );
 
-    // Update query with adaptive polling interval
-    useEffect(() => {
-        let pollCount = 0;
-        const MAX_POLLS = 10;
-
-        if (isSyncRunning || hasMissingThumbnails) {
-            const interval = setInterval(() => {
-                // Stop polling if we reached the limit or if the tab is not visible
-                if (pollCount >= MAX_POLLS || document.hidden) {
-                    if (pollCount >= MAX_POLLS) {
-                        console.warn("[useFiles] Max polls reached for folder, stopping polling.");
-                        clearInterval(interval);
-                    }
-                    return;
-                }
-
-                pollCount++;
-                query.refetch();
-            }, 10000); // 10 seconds
-            return () => clearInterval(interval);
+            return (isSyncRunning || hasMissing) ? 3000 : false;
         }
-    }, [isSyncRunning, hasMissingThumbnails, query.refetch]);
+    });
 
     /** Manual trigger to bypass all caches and force-refresh from cloud providers */
     const refresh = async () => {
         setIsRefreshing(true);
         try {
-            const freshData = await fetchFiles(folderId, true);
-            queryClient.setQueryData(["files", folderId], freshData);
+            // 1. Force refresh the current folder immediately
+            const freshData = await fetchFiles(normalizedFolderId, true);
+            queryClient.setQueryData(["files", normalizedFolderId], freshData);
+
+            // 2. Trigger global background sync for all folders
+            import("../../../services/apiClient").then(({ apiClient }) => {
+                apiClient.post("/accounts/sync", {}).catch(err => console.error("Global sync failed:", err));
+            });
+
+            // 3. Start monitoring sync status to show feedback in UI
+            import("../../accounts/utils/syncState").then(({ syncStateManager }) => {
+                syncStateManager.startMonitoring();
+            });
         } catch (error) {
             console.error("Refresh failed:", error);
         } finally {

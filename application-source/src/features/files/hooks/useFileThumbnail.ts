@@ -38,10 +38,10 @@ export const useFileThumbnail = (file: FileItem) => {
         ? `${apiBaseUrl}/files/thumbnail?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}${file.updated_at ? `&v=${file.updated_at}` : ""}&token=${token}`
         : null;
 
-    const placeholderUrl = isImage 
-        ? `${apiBaseUrl}/assets/placeholder-image.png` 
+    const placeholderUrl = isImage
+        ? `${apiBaseUrl}/assets/placeholder-image.png`
         : `${apiBaseUrl}/assets/placeholder-video.png`;
-    
+
     return {
         provider,
         fileId,
@@ -49,8 +49,8 @@ export const useFileThumbnail = (file: FileItem) => {
         isVideo,
         thumbnailUrl,
         placeholderUrl,
-        // Since generation is now handled in background by backend, 
-        // we consider it 'generating' if it's a media file without metadata yet.
-        isGenerating: !isFolder && (isImage || isVideo) && !file.updated_at,
+        // Backend now provides is_generating flag to help UI stay in sync 
+        // even if stale metadata exists in the DB.
+        isGenerating: file.is_generating || (!isFolder && (isImage || isVideo) && !file.updated_at),
     };
 };
