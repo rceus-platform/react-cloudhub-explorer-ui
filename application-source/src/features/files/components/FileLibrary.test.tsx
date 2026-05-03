@@ -10,6 +10,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 vi.mock("../hooks/useFiles");
 vi.mock("../../../hooks/useAuth", () => ({
     useAuth: () => ({
+        token: "token123",
         connectedAccounts: [],
         isLoadingAccounts: false,
         refreshAccounts: vi.fn(),
@@ -59,5 +60,22 @@ describe("FileLibrary Component", () => {
         await waitFor(() => {
             expect(mockNavigate).toHaveBeenCalled();
         });
+    });
+
+    it("opens image viewer when image file is clicked", () => {
+        const mockFiles = [
+            { name: "photo.jpg", type: "file", ids: { gdrive: "img1" }, providers: ["gdrive"] },
+        ];
+
+        (useFiles as Mock).mockReturnValue({
+            data: { files: mockFiles, folder_id: "root" },
+            isLoading: false,
+            refresh: mockRefresh,
+        });
+
+        render(<FileLibrary />);
+        fireEvent.click(screen.getByText("photo.jpg"));
+
+        expect(screen.getByRole("dialog")).toBeDefined();
     });
 });

@@ -20,6 +20,7 @@ import { FileCardSkeleton } from "../../../components/Skeleton";
 import type { FileItem, FolderState } from "../types";
 import { FileLibraryHeader } from "./FileLibraryHeader";
 import { FileLibraryHero } from "./FileLibraryHero";
+import { ImageViewer, type ImageViewerItem } from "../../image-viewer";
 
 /** Main feature component for browsing and navigating the cloud file library */
 export const FileLibrary: React.FC = () => {
@@ -54,6 +55,9 @@ export const FileLibrary: React.FC = () => {
     });
 
     const [columnCount, setColumnCount] = useState(6);
+    const [isViewerOpen, setIsViewerOpen] = useState(false);
+    const [viewerItems, setViewerItems] = useState<ImageViewerItem[]>([]);
+    const [viewerIndex, setViewerIndex] = useState(0);
 
     // Synchronize URL with folder navigation history
     useEffect(() => {
@@ -110,8 +114,26 @@ export const FileLibrary: React.FC = () => {
 
             const isImage = /\.(jpg|jpeg|png|webp|heic|gif|bmp)$/i.test(file.name);
             if (isImage) {
-                const url = `${import.meta.env.VITE_API_BASE_URL}/files/stream?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&token=${token}`;
-                window.open(url, "_blank");
+                const imageItems = sortedFiles
+                    .filter((item) => item.type === "file" && /\.(jpg|jpeg|png|webp|heic|gif|bmp)$/i.test(item.name))
+                    .map((item) => {
+                        if (item.ids["gdrive"]) {
+                            return { id: item.ids["gdrive"], provider: "gdrive", name: item.name };
+                        }
+                        if (item.ids["mega"]) {
+                            return { id: item.ids["mega"], provider: "mega", name: item.name };
+                        }
+                        return null;
+                    })
+                    .filter((item): item is ImageViewerItem => item !== null);
+
+                const selectedIndex = imageItems.findIndex(
+                    (item) => item.provider === provider && item.id === fileId
+                );
+
+                setViewerItems(imageItems);
+                setViewerIndex(selectedIndex >= 0 ? selectedIndex : 0);
+                setIsViewerOpen(true);
                 return;
             }
 
@@ -174,6 +196,14 @@ export const FileLibrary: React.FC = () => {
                     )}
                 </div>
             </main>
+
+            <ImageViewer
+                isOpen={isViewerOpen}
+                items={viewerItems}
+                initialIndex={viewerIndex}
+                token={token ?? undefined}
+                onClose={() => setIsViewerOpen(false)}
+            />
         </div>
     );
 };
