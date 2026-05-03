@@ -428,10 +428,10 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                 void handleClose();
                 return;
             }
-            if (event.key === "ArrowRight" && zoomLevel <= 1 && state.index < items.length - 1) {
+            if (event.key === "ArrowRight" && state.index < items.length - 1) {
                 handleNext();
             }
-            if (event.key === "ArrowLeft" && zoomLevel <= 1 && state.index > 0) {
+            if (event.key === "ArrowLeft" && state.index > 0) {
                 handlePrev();
             }
         };
