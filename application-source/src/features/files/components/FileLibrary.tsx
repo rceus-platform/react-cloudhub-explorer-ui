@@ -110,7 +110,7 @@ export const FileLibrary: React.FC = () => {
 
             const isImage = /\.(jpg|jpeg|png|webp|heic|gif|bmp)$/i.test(file.name);
             if (isImage) {
-                const url = `${import.meta.env.VITE_API_BASE_URL}/files/thumbnail?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&token=${token}`;
+                const url = `${import.meta.env.VITE_API_BASE_URL}/files/stream?provider=${provider}&file_id=${fileId}&file_name=${encodeURIComponent(file.name)}&token=${token}`;
                 window.open(url, "_blank");
                 return;
             }
