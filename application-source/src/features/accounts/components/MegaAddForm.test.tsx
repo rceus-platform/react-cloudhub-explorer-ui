@@ -20,10 +20,13 @@ describe("MegaAddForm Component", () => {
     const mockSetEmail = vi.fn();
     const mockSetPassword = vi.fn();
     const mockOnSubmit = vi.fn((e) => e.preventDefault());
+    const mockOnClose = vi.fn();
 
     it("renders correctly and handles input changes", () => {
         render(
             <MegaAddForm
+                isOpen={true}
+                onClose={mockOnClose}
                 email="test@mega.nz"
                 setEmail={mockSetEmail}
                 password="pass"
@@ -34,19 +37,21 @@ describe("MegaAddForm Component", () => {
             />
         );
 
-        expect(screen.getByPlaceholderText("MEGA Email")).toBeDefined();
-        expect((screen.getByPlaceholderText("MEGA Email") as HTMLInputElement).value).toBe("test@mega.nz");
+        expect(screen.getByPlaceholderText("Email Address")).toBeDefined();
+        expect((screen.getByPlaceholderText("Email Address") as HTMLInputElement).value).toBe("test@mega.nz");
 
-        fireEvent.change(screen.getByPlaceholderText("MEGA Email"), { target: { value: "new@mega.nz" } });
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "new@mega.nz" } });
         expect(mockSetEmail).toHaveBeenCalledWith("new@mega.nz");
 
-        fireEvent.change(screen.getByPlaceholderText("MEGA Password"), { target: { value: "newpass" } });
+        fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "newpass" } });
         expect(mockSetPassword).toHaveBeenCalledWith("newpass");
     });
 
     it("triggers onSubmit when form is submitted", () => {
         render(
             <MegaAddForm
+                isOpen={true}
+                onClose={mockOnClose}
                 email="test@mega.nz"
                 setEmail={mockSetEmail}
                 password="pass"
@@ -64,6 +69,8 @@ describe("MegaAddForm Component", () => {
     it("shows loading state when isSubmitting is true", () => {
         render(
             <MegaAddForm
+                isOpen={true}
+                onClose={mockOnClose}
                 email=""
                 setEmail={mockSetEmail}
                 password=""
@@ -80,6 +87,8 @@ describe("MegaAddForm Component", () => {
     it("displays error message when provided", () => {
         render(
             <MegaAddForm
+                isOpen={true}
+                onClose={mockOnClose}
                 email=""
                 setEmail={mockSetEmail}
                 password=""
@@ -91,5 +100,23 @@ describe("MegaAddForm Component", () => {
         );
 
         expect(screen.getByText("Invalid credentials")).toBeDefined();
+    });
+
+    it("does not render when isOpen is false", () => {
+        render(
+            <MegaAddForm
+                isOpen={false}
+                onClose={mockOnClose}
+                email=""
+                setEmail={mockSetEmail}
+                password=""
+                setPassword={mockSetPassword}
+                isSubmitting={false}
+                error={null}
+                onSubmit={mockOnSubmit}
+            />
+        );
+
+        expect(screen.queryByText("Link MEGA Storage")).toBeNull();
     });
 });
