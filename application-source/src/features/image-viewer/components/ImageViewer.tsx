@@ -667,17 +667,17 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                 @keyframes imageViewerFadeIn { from { opacity: 0; } to { opacity: 1; } }
                 .viewer-controls {
                     position: fixed;
-                    top: 0;
+                    bottom: 0;
                     left: 0;
                     width: 100%;
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding: 10px 16px;
-                    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+                    padding: 20px 24px;
+                    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
                     opacity: 0;
                     pointer-events: none;
-                    transition: opacity 180ms ease;
+                    transition: opacity 200ms ease;
                     z-index: 10000;
                 }
                 .viewer-controls.visible {
@@ -687,30 +687,40 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                 .viewer-group {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 12px;
                 }
                 .viewer-icon-btn {
-                    width: 34px;
-                    height: 34px;
+                    width: 40px;
+                    height: 40px;
                     display: inline-flex;
                     align-items: center;
                     justify-content: center;
-                    border: 1px solid rgba(255,255,255,0.25);
-                    border-radius: 8px;
-                    background: rgba(22,22,22,0.78);
-                    color: #f3f6ff;
-                    font-size: 18px;
+                    border: 1px solid rgba(255,255,255,0.15);
+                    border-radius: 12px;
+                    background: rgba(32,32,32,0.85);
+                    color: #fff;
+                    font-size: 20px;
                     cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .viewer-icon-btn:hover:not(:disabled) {
+                    background: rgba(60,60,60,0.95);
+                    transform: translateY(-2px);
+                    border-color: rgba(255,255,255,0.3);
                 }
                 .viewer-icon-btn:disabled {
                     opacity: 0.4;
                     cursor: not-allowed;
                 }
                 .viewer-counter {
-                    color: #f3f6ff;
-                    font-size: 13px;
-                    min-width: 72px;
+                    color: #fff;
+                    font-size: 14px;
+                    font-weight: 600;
+                    min-width: 80px;
                     text-align: center;
+                    background: rgba(255,255,255,0.1);
+                    padding: 6px 12px;
+                    border-radius: 20px;
                 }
                 `}
             </style>

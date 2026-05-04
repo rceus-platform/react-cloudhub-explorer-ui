@@ -38,12 +38,12 @@ export const AccountCard: React.FC<AccountCardProps> = ({
   return (
     <motion.div
       layout
-      className={`account-card glass-premium ${!account.is_active ? 'inactive' : ''}`}
+      className={`account-card ${!account.is_active ? 'inactive' : ''}`}
     >
       <div className="card-top">
         <div className="provider-info">
           <div className={`provider-icon ${account.provider}`}>
-            {account.provider === 'gdrive' ? <SiGooglecloud size={18} /> : <SiMega size={18} />}
+            {account.provider === 'gdrive' ? <SiGooglecloud size={16} /> : <SiMega size={16} />}
           </div>
           <div className="identity">
             <span className="email">{account.email}</span>
@@ -52,15 +52,24 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             </span>
           </div>
         </div>
-        <div className={`status-badge ${account.is_active ? 'active' : 'error'}`}>
-          {account.is_active ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-          {account.is_active ? 'Active' : 'Expired'}
+        <div className="top-actions">
+          <div className={`status-badge ${account.is_active ? 'active' : 'error'}`}>
+            {account.is_active ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
+            {account.is_active ? 'Active' : 'Expired'}
+          </div>
+          <button
+            className="symbol-btn disconnect"
+            onClick={() => onDisconnect(account.id)}
+            title="Disconnect Account"
+          >
+            <LogOut size={12} />
+          </button>
         </div>
       </div>
 
       <div className="card-usage">
         <div className="usage-info">
-          <span><HardDrive size={12} /> {formatBytes(account.storage_used)} / {formatBytes(account.storage_total)}</span>
+          <span><HardDrive size={11} style={{ marginRight: '4px' }} /> {formatBytes(account.storage_used)} / {formatBytes(account.storage_total)}</span>
           <span>{usagePercentage}%</span>
         </div>
         <div className="progress-bar-bg">
@@ -70,15 +79,6 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             className="progress-bar-fill"
           />
         </div>
-      </div>
-
-      <div className="card-actions">
-        <button
-          className="disconnect-btn"
-          onClick={() => onDisconnect(account.id)}
-        >
-          <LogOut size={14} /> Disconnect
-        </button>
       </div>
     </motion.div>
   );
