@@ -1,4 +1,16 @@
-import React, { useEffect, useMemo, useReducer, useRef, useState } from "react";
+/**
+ * ImageViewer Feature Module
+ *
+ * Responsibilities:
+ * - Provide a high-performance image viewing experience with zoom, pan, and rotation.
+ * - Manage image preloading and caching for smooth navigation.
+ * - Handle fullscreen and keyboard interactions.
+ *
+ * Boundaries:
+ * - Does not handle file system operations directly; relies on provided item metadata and tokens.
+ */
+
+import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 export interface ImageViewerItem {
     id: string;
@@ -84,12 +96,13 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
     const [isFullscreenActive, setIsFullscreenActive] = useState(false);
     const [rotation, setRotation] = useState(0);
     const [isControlsVisible, setIsControlsVisible] = useState(true);
-    const [displaySrc, setDisplaySrc] = useState("");
     const hideControlsTimerRef = useRef<number | null>(null);
     const imageCacheRef = useRef<Map<string, CachedImageEntry>>(new Map());
     const pendingIdleHandlesRef = useRef<number[]>([]);
     const objectUrlRef = useRef<string | null>(null);
     const blobFallbackTriedRef = useRef<Set<string>>(new Set());
+    const [fallbackUrl, setFallbackUrl] = useState<string | null>(null);
+    const [prevUrl, setPrevUrl] = useState("");
 
     const [state, dispatch] = useReducer(reducer, {
         index: initialIndex,
@@ -99,7 +112,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
 
     const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-    const getFitMetrics = (scale: number): FitMetrics => {
+    /** Calculate fit metrics for the current image and stage dimensions. */
+    const getFitMetrics = useCallback((scale: number): FitMetrics => {
         const stage = stageRef.current;
         const image = imageRef.current;
         if (!stage || !image || image.naturalWidth === 0 || image.naturalHeight === 0) {
@@ -117,9 +131,10 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         const maxX = Math.max(0, ((baseW * scale) - baseW) / 2);
         const maxY = Math.max(0, ((baseH * scale) - baseH) / 2);
         return { baseW, baseH, maxX, maxY, stageW, stageH };
-    };
+    }, [rotation]);
 
-    const applyTransform = (nextScale: number, nextX: number, nextY: number) => {
+    /** Apply CSS transformations to the image element. */
+    const applyTransform = useCallback((nextScale: number, nextX: number, nextY: number) => {
         const image = imageRef.current;
         if (!image) return;
 
@@ -138,20 +153,23 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         }
         image.style.transform = `translate3d(${boundedX}px, ${boundedY}px, 0) scale(${boundedScale}) rotate(${rotation}deg)`;
         setZoomLevel(boundedScale);
-    };
+    }, [getFitMetrics, rotation]);
 
-    const resetTransform = () => {
+    /** Reset the image to its base scale and position. */
+    const resetTransform = useCallback(() => {
         applyTransform(1, 0, 0);
-    };
+    }, [applyTransform]);
 
-    const resetViewState = () => {
-        setRotation(0);
+    /** Reset the rotation and view state of the image. */
+    const resetViewState = useCallback(() => {
         requestAnimationFrame(() => {
+            setRotation(0);
             applyTransform(1, 0, 0);
         });
-    };
+    }, [applyTransform]);
 
-    const zoomAtPoint = (clientX: number, clientY: number, deltaScale: number) => {
+    /** Zoom into the image at a specific screen point. */
+    const zoomAtPoint = useCallback((clientX: number, clientY: number, deltaScale: number) => {
         const stage = stageRef.current;
         if (!stage) return;
 
@@ -165,14 +183,14 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         const nextX = pointX - (pointX - current.x) * ratio;
         const nextY = pointY - (pointY - current.y) * ratio;
         applyTransform(nextScale, nextX, nextY);
-    };
+    }, [applyTransform]);
 
     useEffect(() => {
         if (isOpen) {
             dispatch({ type: "SET_INDEX", payload: Math.max(0, Math.min(initialIndex, items.length - 1)) });
             resetViewState();
         }
-    }, [isOpen, initialIndex, items.length]);
+    }, [isOpen, initialIndex, items.length, resetViewState]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -183,7 +201,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         };
     }, [isOpen]);
 
-    const exitFullscreenIfNeeded = async () => {
+    /** Exit fullscreen mode if active. */
+    const exitFullscreenIfNeeded = useCallback(async () => {
         const docWithWebkit = document as Document & {
             webkitExitFullscreen?: () => Promise<void> | void;
             webkitFullscreenElement?: Element | null;
@@ -200,14 +219,16 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         } catch {
             // Fallback to overlay-only close flow
         }
-    };
+    }, []);
 
-    const handleClose = async () => {
+    /** Close the image viewer and exit fullscreen. */
+    const handleClose = useCallback(async () => {
         await exitFullscreenIfNeeded();
         onClose();
-    };
+    }, [exitFullscreenIfNeeded, onClose]);
 
-    const enterFullscreenIfPossible = async () => {
+    /** Enter fullscreen mode if supported by the browser. */
+    const enterFullscreenIfPossible = useCallback(async () => {
         const element = viewerRef.current as (HTMLDivElement & {
             webkitRequestFullscreen?: () => Promise<void> | void;
         }) | null;
@@ -222,15 +243,16 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         } catch {
             // Keep overlay fallback if browser rejects fullscreen.
         }
-    };
+    }, []);
 
-    const toggleFullscreen = async () => {
+    /** Toggle between fullscreen and windowed mode. */
+    const toggleFullscreen = useCallback(async () => {
         if (isFullscreenActive) {
             await exitFullscreenIfNeeded();
             return;
         }
         await enterFullscreenIfPossible();
-    };
+    }, [isFullscreenActive, exitFullscreenIfNeeded, enterFullscreenIfPossible]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -260,12 +282,13 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             document.removeEventListener("webkitfullscreenchange", onFullscreenChange as EventListener);
             void exitFullscreenIfNeeded();
         };
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, enterFullscreenIfPossible, exitFullscreenIfNeeded]);
 
     const current = items[state.index];
     const hasItems = items.length > 0;
 
-    const getImageUrl = (item: ImageViewerItem) => {
+    /** Generate the API URL for a given image item. */
+    const getImageUrl = useCallback((item: ImageViewerItem) => {
         const base = import.meta.env.VITE_API_BASE_URL;
         const query = new URLSearchParams({
             provider: item.provider,
@@ -273,7 +296,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         });
         if (token) query.set("token", token);
         return `${base}/images/${encodeURIComponent(item.id)}?${query.toString()}`;
-    };
+    }, [token]);
 
     const touchCache = (url: string) => {
         const existing = imageCacheRef.current.get(url);
@@ -282,7 +305,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         imageCacheRef.current.set(url, existing);
     };
 
-    const preloadImage = (url: string): Promise<void> => {
+    /** Preload an image URL into the cache. */
+    const preloadImage = useCallback((url: string): Promise<void> => {
         const existing = imageCacheRef.current.get(url);
         if (existing?.status === "loaded") {
             touchCache(url);
@@ -319,9 +343,10 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
 
             img.src = url;
         });
-    };
+    }, []);
 
-    const scheduleIdle = (task: () => void) => {
+    /** Schedule a task to run during idle time or as a microtask. */
+    const scheduleIdle = useCallback((task: () => void) => {
         type IdleCallback = (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void;
         const win = window as Window & {
             requestIdleCallback?: (cb: IdleCallback) => number;
@@ -335,12 +360,19 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
 
         const timeoutHandle = window.setTimeout(task, 0);
         pendingIdleHandlesRef.current.push(timeoutHandle);
-    };
+    }, []);
 
     const currentUrl = useMemo(() => {
         if (!current) return "";
         return getImageUrl(current);
-    }, [current, token]);
+    }, [current, getImageUrl]);
+
+    if (prevUrl !== currentUrl) {
+        setPrevUrl(currentUrl);
+        setFallbackUrl(null);
+    }
+
+    const displaySrc = fallbackUrl || currentUrl;
 
     useEffect(() => {
         if (!isOpen || !hasItems) return;
@@ -366,7 +398,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             pendingIdleHandlesRef.current.forEach((handle) => window.clearTimeout(handle));
             pendingIdleHandlesRef.current = [];
         };
-    }, [isOpen, hasItems, items, state.index, token]);
+    }, [isOpen, hasItems, items, state.index, getImageUrl, preloadImage, scheduleIdle]);
 
     useEffect(() => {
         if (!isOpen || !currentUrl) return;
@@ -377,7 +409,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             URL.revokeObjectURL(objectUrlRef.current);
             objectUrlRef.current = null;
         }
-        setDisplaySrc(currentUrl);
+
         if (cached?.status === "loaded") {
             touchCache(currentUrl);
             dispatch({ type: "LOAD_SUCCESS" });
@@ -398,13 +430,13 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         return () => {
             cancelled = true;
         };
-    }, [isOpen, currentUrl]);
+    }, [isOpen, currentUrl, preloadImage]);
 
     useEffect(() => {
         if (!isOpen) return;
         resetViewState();
         blobFallbackTriedRef.current.delete(currentUrl);
-    }, [state.index, isOpen, currentUrl]);
+    }, [state.index, isOpen, currentUrl, resetViewState]);
 
     useEffect(() => {
         return () => {
@@ -418,7 +450,21 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
     useEffect(() => {
         if (!isOpen) return;
         applyTransform(transformRef.current.scale, transformRef.current.x, transformRef.current.y);
-    }, [rotation, isOpen]);
+    }, [rotation, isOpen, applyTransform]);
+
+    /** Navigate to the next image in the collection. */
+    const handleNext = useCallback(() => {
+        if (state.index >= items.length - 1) return;
+        resetViewState();
+        dispatch({ type: "SET_INDEX", payload: state.index + 1 });
+    }, [state.index, items.length, resetViewState]);
+
+    /** Navigate to the previous image in the collection. */
+    const handlePrev = useCallback(() => {
+        if (state.index <= 0) return;
+        resetViewState();
+        dispatch({ type: "SET_INDEX", payload: state.index - 1 });
+    }, [state.index, resetViewState]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -438,19 +484,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
 
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [isOpen, state.index, items.length, zoomLevel]);
-
-    const handleNext = () => {
-        if (state.index >= items.length - 1) return;
-        resetViewState();
-        dispatch({ type: "SET_INDEX", payload: state.index + 1 });
-    };
-
-    const handlePrev = () => {
-        if (state.index <= 0) return;
-        resetViewState();
-        dispatch({ type: "SET_INDEX", payload: state.index - 1 });
-    };
+    }, [isOpen, state.index, items.length, handleClose, handleNext, handlePrev]);
 
     const handleWheel: React.WheelEventHandler<HTMLDivElement> = (event) => {
         if (!event.ctrlKey) return;
@@ -538,7 +572,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         setRotation((prev) => (prev + 90) % 360);
     };
 
-    const tryBlobFallback = async (url: string) => {
+    /** Attempt to fetch the image as a blob if the direct URL fails. */
+    const tryBlobFallback = useCallback(async (url: string) => {
         if (!url || blobFallbackTriedRef.current.has(url)) return;
         blobFallbackTriedRef.current.add(url);
 
@@ -566,12 +601,12 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             }
             const objectUrl = URL.createObjectURL(blob);
             objectUrlRef.current = objectUrl;
-            setDisplaySrc(objectUrl);
+            setFallbackUrl(objectUrl);
             dispatch({ type: "LOAD_START" });
         } catch (error) {
             console.error("[ImageViewer] Blob fallback error", error);
         }
-    };
+    }, []);
 
     useEffect(() => {
         if (!isOpen) return;
