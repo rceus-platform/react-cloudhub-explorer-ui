@@ -18,6 +18,15 @@ interface AuthOverlayProps {
   error?: string | null;
 }
 
+/** Horizontal slide variants for tab content switching */
+const slideVariants = {
+  enterFromLeft: { opacity: 0, x: -40 },
+  enterFromRight: { opacity: 0, x: 40 },
+  center: { opacity: 1, x: 0 },
+  exitToLeft: { opacity: 0, x: -40 },
+  exitToRight: { opacity: 0, x: 40 },
+};
+
 export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin, error: externalError }) => {
   const [mode, setMode] = useState<'pin' | 'login'>('pin');
   const [pin, setPin] = useState(['', '', '', '']);
@@ -25,6 +34,8 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  /** Track slide direction: true = sliding right (pin→login), false = sliding left */
+  const [slideRight, setSlideRight] = useState(true);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
 
@@ -75,6 +86,12 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
     setIsSubmitting(false);
   };
 
+  const switchMode = (newMode: 'pin' | 'login') => {
+    if (newMode === mode) return;
+    setSlideRight(newMode === 'login');
+    setMode(newMode);
+  };
+
   const error = externalError || localError;
 
   return (
@@ -82,11 +99,12 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className={styles.card}
       >
         <div className={styles.header}>
           <div className={styles.iconCircle}>
-            <Shield className={styles.shieldIcon} size={32} />
+            <Shield className={styles.shieldIcon} size={28} />
           </div>
           <h2 className={styles.title}>CloudHub Explorer</h2>
           <p className={styles.subtitle}>
@@ -97,13 +115,13 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
         <div className={styles.tabs}>
           <button
             className={`${styles.tab} ${mode === 'pin' ? styles.activeTab : ''}`}
-            onClick={() => setMode('pin')}
+            onClick={() => switchMode('pin')}
           >
             <Hash size={14} /> Quick PIN
           </button>
           <button
             className={`${styles.tab} ${mode === 'login' ? styles.activeTab : ''}`}
-            onClick={() => setMode('login')}
+            onClick={() => switchMode('login')}
           >
             <UserIcon size={14} /> Admin Login
           </button>
@@ -113,9 +131,11 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
           {mode === 'pin' ? (
             <motion.form
               key="pin-form"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
+              initial={slideRight ? 'enterFromLeft' : 'enterFromRight'}
+              animate="center"
+              exit={slideRight ? 'exitToLeft' : 'exitToRight'}
+              variants={slideVariants}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
               onSubmit={handlePinSubmit}
               className={styles.form}
             >
@@ -133,19 +153,22 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
                     className={styles.pinDigit}
                     autoFocus={index === 0}
                     disabled={isSubmitting}
+                    aria-label={`PIN digit ${index + 1}`}
                   />
                 ))}
               </div>
               <button type="submit" className={styles.submitBtn} disabled={pin.join('').length < 4 || isSubmitting}>
-                {isSubmitting ? <Loader2 className={styles.spin} /> : 'Unlock Now'}
+                {isSubmitting ? <Loader2 className={styles.spin} size={20} /> : 'Unlock Now'}
               </button>
             </motion.form>
           ) : (
             <motion.form
               key="login-form"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
+              initial={slideRight ? 'enterFromRight' : 'enterFromLeft'}
+              animate="center"
+              exit={slideRight ? 'exitToRight' : 'exitToLeft'}
+              variants={slideVariants}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
               onSubmit={handleLoginSubmit}
               className={styles.form}
             >
@@ -161,6 +184,7 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
                   className={styles.textInput}
                   required
                   disabled={isSubmitting}
+                  aria-label="Username"
                 />
               </div>
               <div className={styles.inputGroup}>
@@ -175,10 +199,11 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
                   className={styles.textInput}
                   required
                   disabled={isSubmitting}
+                  aria-label="Password"
                 />
               </div>
               <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className={styles.spin} /> : (
+                {isSubmitting ? <Loader2 className={styles.spin} size={20} /> : (
                   <>
                     Sign In <ChevronRight size={18} />
                   </>

@@ -176,7 +176,7 @@ export const FileCard: React.FC<FileCardProps> = ({ file, onClick }) => {
 
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", opacity: 0.5, fontWeight: 500 }}>
                         <span style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{provider}</span>
-                        {file.size && (
+                        {typeof file.size === "number" && (
                             <>
                                 <div style={{ width: "3px", height: "3px", borderRadius: "50%", backgroundColor: "currentColor" }} />
                                 <span>{formatSize(file.size)}</span>

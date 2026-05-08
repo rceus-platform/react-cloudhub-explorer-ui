@@ -41,3 +41,85 @@ export interface UpdateThumbnailResponse {
     success: boolean;
     updated_at: number;
 }
+
+// ---------------------------------------------------------------------------
+// New unified FileSystemItem types
+// ---------------------------------------------------------------------------
+
+/** A tag associated with a file or folder */
+export interface Tag {
+    id: number;
+    name: string;
+}
+
+/** A share link record */
+export interface ShareLink {
+    hash: string;
+    permission: "view" | "edit";
+    expires_at: string | null;
+    url: string;
+}
+
+/** Unified file/folder record from the /items API */
+export interface FileSystemItem {
+    id: string;
+    name: string;
+    is_folder: boolean;
+    parent_id: string | null;
+    provider: string;
+    provider_id: string | null;
+    mime_type: string | null;
+    size: number | null;
+    extension: string | null;
+    tags: Tag[];
+    created_at: string;
+    updated_at: string;
+}
+
+/** Request to move items */
+export interface MoveRequest {
+    item_ids: string[];
+    destination_id: string | null;
+}
+
+/** Request to copy items */
+export interface CopyRequest {
+    item_ids: string[];
+    destination_id: string | null;
+}
+
+/** Request to rename an item */
+export interface RenameRequest {
+    name: string;
+}
+
+/** Request to delete items */
+export interface DeleteRequest {
+    item_ids: string[];
+}
+
+/** Request to update tags */
+export interface TagUpdateRequest {
+    tags: string[];
+}
+
+/** Request to create a share link */
+export interface ShareLinkCreateRequest {
+    item_id: string;
+    permission?: "view" | "edit";
+    expires_at?: string | null;
+    password?: string | null;
+}
+
+/** Request to create a folder */
+export interface FolderCreateRequest {
+    name: string;
+    parent_id?: string | null;
+}
+
+/** Request to create a text file */
+export interface TextFileCreateRequest {
+    name: string;
+    content: string;
+    parent_id?: string | null;
+}

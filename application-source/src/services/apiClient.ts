@@ -63,11 +63,25 @@ export const apiClient = {
         return res.json();
     },
 
-    /** Perform a DELETE request */
-    delete: async <T>(endpoint: string): Promise<T> => {
+    /** Perform a DELETE request (with optional JSON body for bulk operations) */
+    delete: async <T>(endpoint: string, body?: unknown): Promise<T> => {
         const res = await fetch(`${BASE_URL}${endpoint}`, {
             method: "DELETE",
             headers: getHeaders(),
+            body: body ? JSON.stringify(body) : undefined,
+        });
+        if (!res.ok) {
+            throw new Error(`API error: ${res.status} ${res.statusText}`);
+        }
+        return res.json();
+    },
+
+    /** Perform a PUT request */
+    put: async <T>(endpoint: string, body: unknown): Promise<T> => {
+        const res = await fetch(`${BASE_URL}${endpoint}`, {
+            method: "PUT",
+            headers: getHeaders(),
+            body: JSON.stringify(body),
         });
         if (!res.ok) {
             throw new Error(`API error: ${res.status} ${res.statusText}`);
