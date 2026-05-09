@@ -23,12 +23,13 @@ interface FileLibraryHeaderProps {
     onBreadcrumbClick: (index: number) => void;
     onColumnCountChange: (count: number) => void;
     onRefresh: () => void;
+    onRefreshData: () => void;
     isRefreshing?: boolean;
 }
 
 /** Ultra-minimalist header with focused navigation and controls */
 export const FileLibraryHeader: React.FC<FileLibraryHeaderProps> = ({
-    history, columnCount, onBreadcrumbClick, onColumnCountChange, onRefresh, isRefreshing
+    history, columnCount, onBreadcrumbClick, onColumnCountChange, onRefresh, onRefreshData, isRefreshing
 }) => {
     const [isAccountManagerOpen, setIsAccountManagerOpen] = useState(false);
     const { openCreateFolder, openUploadFile } = useFileStore();
@@ -122,6 +123,20 @@ export const FileLibraryHeader: React.FC<FileLibraryHeaderProps> = ({
                     >
                         <Upload size={14} />
                         <span style={{ fontSize: "12px" }}>Upload</span>
+                    </button>
+
+                    <button
+                        onClick={onRefreshData}
+                        className="premium-button secondary"
+                        style={{
+                            padding: "8px 12px", height: "36px", gap: "6px",
+                            opacity: isRefreshing ? 0.5 : 1,
+                            pointerEvents: isRefreshing ? "none" : "auto"
+                        }}
+                        title="Recalculate folder sizes and refresh data"
+                    >
+                        <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
+                        <span style={{ fontSize: "12px" }}>Refresh Data</span>
                     </button>
 
                     <button

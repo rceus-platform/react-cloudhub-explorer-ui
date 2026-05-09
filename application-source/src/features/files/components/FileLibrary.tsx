@@ -77,11 +77,27 @@ export const FileLibrary: React.FC = () => {
     const [isViewerOpen, setIsViewerOpen] = useState(false);
     const [viewerItems, setViewerItems] = useState<ImageViewerItem[]>([]);
     const [viewerIndex, setViewerIndex] = useState(0);
+    const [toast, setToast] = useState<{ message: string; kind: "success" | "error" } | null>(null);
 
 
 
     const currentFolder = history[history.length - 1];
-    const { data, isLoading, error, refresh, isRefreshing } = useFiles(currentFolder.id);
+    const { data, isLoading, error, refresh, refreshData, isRefreshing } = useFiles(currentFolder.id);
+
+    useEffect(() => {
+        if (!toast) return;
+        const timer = window.setTimeout(() => setToast(null), 2600);
+        return () => window.clearTimeout(timer);
+    }, [toast]);
+
+    const handleRefreshData = async () => {
+        const ok = await refreshData();
+        if (ok) {
+            setToast({ message: "Folder sizes recalculated and data refreshed", kind: "success" });
+        } else {
+            setToast({ message: "Refresh data failed", kind: "error" });
+        }
+    };
 
     // Memoize files retrieval to satisfy hook dependency rules
     const files = useMemo(() => data?.files ?? [], [data?.files]);
@@ -195,6 +211,7 @@ export const FileLibrary: React.FC = () => {
                 }}
                 onColumnCountChange={setColumnCount}
                 onRefresh={refresh}
+                onRefreshData={handleRefreshData}
                 isRefreshing={isRefreshing}
             />
 
@@ -256,6 +273,31 @@ export const FileLibrary: React.FC = () => {
                 parentId={currentFolder.id === "root" ? null : currentFolder.id}
                 onCreated={refresh}
             />
+
+            {toast && (
+                <div
+                    role="status"
+                    style={{
+                        position: "fixed",
+                        right: "24px",
+                        bottom: "24px",
+                        zIndex: 1200,
+                        padding: "12px 16px",
+                        borderRadius: "10px",
+                        color: "#fff",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        background:
+                            toast.kind === "success"
+                                ? "linear-gradient(135deg, #1d6f42 0%, #0f4d2e 100%)"
+                                : "linear-gradient(135deg, #8f2d2d 0%, #5d1b1b 100%)",
+                        boxShadow: "0 12px 28px rgba(0, 0, 0, 0.35)",
+                        border: "1px solid rgba(255,255,255,0.12)",
+                    }}
+                >
+                    {toast.message}
+                </div>
+            )}
         </div>
     );
 };

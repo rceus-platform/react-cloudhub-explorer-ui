@@ -85,5 +85,23 @@ export function useFiles(folderId: string) {
         }
     };
 
-    return { ...query, refresh, isRefreshing };
+    /** Full data refresh: rebuild folder sizes server-side, then reload current folder */
+    const refreshData = async (): Promise<boolean> => {
+        setIsRefreshing(true);
+        try {
+            const { apiClient } = await import("../../../services/apiClient");
+            await apiClient.post<{ message: string }>("/accounts/recalculate-sizes", {});
+
+            const freshData = await fetchFiles(normalizedFolderId, true);
+            queryClient.setQueryData(["files", normalizedFolderId], freshData);
+            return true;
+        } catch (error) {
+            console.error("Refresh data failed:", error);
+            return false;
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+
+    return { ...query, refresh, refreshData, isRefreshing };
 }
