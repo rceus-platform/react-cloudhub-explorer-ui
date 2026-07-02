@@ -40,7 +40,7 @@ export interface FilterConfig {
 }
 
 export interface ModalState {
-    tagManager: { open: boolean; itemId: string | null };
+    tagManager: { open: boolean; itemId: string | null; fileName?: string; provider?: string };
     shareModal: { open: boolean; itemId: string | null };
     createFolder: boolean;
     createTextFile: boolean;
@@ -69,7 +69,7 @@ export interface FileStoreState {
 
     // Modals
     modals: ModalState;
-    openTagManager: (itemId: string) => void;
+    openTagManager: (itemId: string, fileName?: string, provider?: string) => void;
     closeTagManager: () => void;
     openShareModal: (itemId: string) => void;
     closeShareModal: () => void;
@@ -142,9 +142,9 @@ export const useFileStore = create<FileStoreState>()(
 
             // Modals
             modals: { ...defaultModals },
-            openTagManager: (itemId) =>
+            openTagManager: (itemId, fileName, provider) =>
                 set((state) => ({
-                    modals: { ...state.modals, tagManager: { open: true, itemId } },
+                    modals: { ...state.modals, tagManager: { open: true, itemId, fileName, provider } },
                 })),
             closeTagManager: () =>
                 set((state) => ({

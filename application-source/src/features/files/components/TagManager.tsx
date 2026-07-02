@@ -5,35 +5,69 @@
  * - Display and edit tags for a specific file or folder
  * - Allow adding new tags and removing existing ones
  * - Persist changes via the /items/{id}/tags API endpoint
+ * - Fetch existing tags when modal opens
  *
  * Boundaries:
- * - Receives itemId from the global Zustand store (opened via openTagManager)
+ * - Receives file info from the global Zustand store (opened via openTagManager)
  * - Does not handle navigation or file streaming
  */
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Tag as TagIcon, Plus } from "lucide-react";
+import { X, Tag as TagIcon, Plus, Loader } from "lucide-react";
 import { useFileStore } from "../../../store/useFileStore";
-import { updateTags } from "../services/itemService";
+import { updateTags, fetchItems } from "../services/itemService";
+import type { FileSystemItem } from "../types";
 
 /** Pill-style tag editor modal */
 export const TagManager: React.FC = () => {
     const { modals, closeTagManager } = useFileStore();
-    const { open, itemId } = modals.tagManager;
+    const { open, itemId, fileName } = modals.tagManager;
 
     const [tags, setTags] = useState<string[]>([]);
     const [inputValue, setInputValue] = useState("");
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [resolvedItemId, setResolvedItemId] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // Fetch the FileSystemItem details when modal opens
     useEffect(() => {
-        if (open) {
+        if (open && fileName) {
+            setLoading(true);
+            setError(null);
+
+            // Search for the file by name in the items API
+            fetchItems({ search: fileName })
+                .then((items) => {
+                    // Find the exact matching item by name
+                    const matched = items.find((item) => item.name === fileName);
+                    if (matched) {
+                        setResolvedItemId(matched.id);
+                        setTags(matched.tags?.map((tag) => tag.name) || []);
+                    } else {
+                        setError(`Could not find file "${fileName}"`);
+                    }
+                })
+                .catch((err) => {
+                    console.error("Error fetching file details:", err);
+                    setError("Failed to load file tags");
+                })
+                .finally(() => {
+                    setLoading(false);
+                    setTimeout(() => inputRef.current?.focus(), 100);
+                });
+        }
+    }, [open, fileName]);
+
+    // Reset state when closing
+    useEffect(() => {
+        if (!open) {
             setTags([]);
             setInputValue("");
             setError(null);
-            setTimeout(() => inputRef.current?.focus(), 100);
+            setResolvedItemId(null);
         }
     }, [open]);
 
@@ -57,11 +91,14 @@ export const TagManager: React.FC = () => {
     };
 
     const handleSave = async () => {
-        if (!itemId) return;
+        if (!resolvedItemId) {
+            setError("File not found. Please try again.");
+            return;
+        }
         setSaving(true);
         setError(null);
         try {
-            await updateTags(itemId, { tags });
+            await updateTags(resolvedItemId, { tags });
             closeTagManager();
         } catch (_err) {
             setError("Failed to save tags. Please try again.");
@@ -116,6 +153,7 @@ export const TagManager: React.FC = () => {
                                 </div>
                                 <div>
                                     <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700 }}>Manage Tags</h3>
+                                    {fileName && <p style={{ margin: 0, fontSize: "11px", opacity: 0.5 }}>{fileName}</p>}
                                     <p style={{ margin: 0, fontSize: "12px", opacity: 0.4 }}>Press Enter or comma to add</p>
                                 </div>
                             </div>
@@ -127,6 +165,22 @@ export const TagManager: React.FC = () => {
                             </button>
                         </div>
 
+                        {/* Loading State */}
+                        {loading && (
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100px" }}>
+                                <Loader size={20} style={{ animation: "spin 1s linear infinite", color: "var(--accent-color)" }} />
+                            </div>
+                        )}
+
+                        {/* Loading State */}
+                        {loading && (
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100px" }}>
+                                <Loader size={20} style={{ animation: "spin 1s linear infinite", color: "var(--accent-color)" }} />
+                            </div>
+                        )}
+
+                        {!loading && (
+                            <>
                         {/* Tag Input Area */}
                         <div
                             onClick={() => inputRef.current?.focus()}
@@ -238,6 +292,8 @@ export const TagManager: React.FC = () => {
                                 {saving ? "Saving..." : "Save Tags"}
                             </button>
                         </div>
+                            </>
+                        )}
                     </motion.div>
                 </motion.div>
             )}

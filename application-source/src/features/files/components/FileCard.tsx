@@ -12,7 +12,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaFolder, FaPlay } from "react-icons/fa";
+import { Tag as TagIcon } from "lucide-react";
 import { useFileThumbnail } from "../hooks/useFileThumbnail";
+import { useFileStore } from "../../../store/useFileStore";
 import type { FileItem } from "../types";
 import { formatSize, formatDuration } from "../utils/formatters";
 
@@ -25,6 +27,7 @@ interface FileCardProps {
 export const FileCard: React.FC<FileCardProps> = ({ file, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
     const { provider, isImage, thumbnailUrl, placeholderUrl } = useFileThumbnail(file);
+    const { openTagManager } = useFileStore();
 
     const isFolder = file.type === "folder";
     const progress = file.progress_percentage || 0;
@@ -163,15 +166,42 @@ export const FileCard: React.FC<FileCardProps> = ({ file, onClick }) => {
                 </div>
 
                 {/* Content Section */}
-                <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        {isFolder && <FaFolder size={14} style={{ opacity: 0.4, flexShrink: 0 }} />}
-                        <h3 style={{
-                            margin: 0, fontSize: "15px", fontWeight: 600, color: "var(--text-primary)",
-                            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
-                        }}>
-                            {file.name}
-                        </h3>
+                <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
+                            {isFolder && <FaFolder size={14} style={{ opacity: 0.4, flexShrink: 0 }} />}
+                            <h3 style={{
+                                margin: 0, fontSize: "15px", fontWeight: 600, color: "var(--text-primary)",
+                                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
+                            }}>
+                                {file.name}
+                            </h3>
+                        </div>
+                        <motion.button
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: isHovered ? 1 : 0 }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openTagManager(file.name, file.name, provider);
+                            }}
+                            style={{
+                                background: "rgba(255,255,255,0.08)",
+                                border: "1px solid rgba(255,255,255,0.1)",
+                                borderRadius: "6px",
+                                padding: "6px",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "var(--accent-color)",
+                                flexShrink: 0,
+                                transition: "all 0.2s ease"
+                            }}
+                            whileHover={{ background: "rgba(255,255,255,0.12)", scale: 1.05 }}
+                            title="Add tags"
+                        >
+                            <TagIcon size={14} />
+                        </motion.button>
                     </div>
 
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", opacity: 0.5, fontWeight: 500 }}>

@@ -76,7 +76,7 @@ export function useFiles(folderId: string) {
 
             // 3. Start monitoring sync status to show feedback in UI
             import("../../accounts/utils/syncState").then(({ syncStateManager }) => {
-                syncStateManager.startMonitoring();
+                syncStateManager.startMonitoring('thumbnails');
             });
         } catch (error) {
             console.error("Refresh failed:", error);

@@ -82,22 +82,13 @@ export const FileLibrary: React.FC = () => {
 
 
     const currentFolder = history[history.length - 1];
-    const { data, isLoading, error, refresh, refreshData, isRefreshing } = useFiles(currentFolder.id);
+    const { data, isLoading, error, refresh } = useFiles(currentFolder.id);
 
     useEffect(() => {
         if (!toast) return;
         const timer = window.setTimeout(() => setToast(null), 2600);
         return () => window.clearTimeout(timer);
     }, [toast]);
-
-    const handleRefreshData = async () => {
-        const ok = await refreshData();
-        if (ok) {
-            setToast({ message: "Folder sizes recalculated and data refreshed", kind: "success" });
-        } else {
-            setToast({ message: "Refresh data failed", kind: "error" });
-        }
-    };
 
     // Memoize files retrieval to satisfy hook dependency rules
     const files = useMemo(() => data?.files ?? [], [data?.files]);
@@ -210,9 +201,6 @@ export const FileLibrary: React.FC = () => {
                     }
                 }}
                 onColumnCountChange={setColumnCount}
-                onRefresh={refresh}
-                onRefreshData={handleRefreshData}
-                isRefreshing={isRefreshing}
             />
 
             <main className="container" style={{ paddingBottom: "100px" }}>

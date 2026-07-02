@@ -1,35 +1,42 @@
 /**
- * Shared state for tracking if we should be actively monitoring background sync.
- * This prevents unnecessary polling of the sync status until a sync is actually triggered.
+ * Shared state for tracking active sync operations across the app.
+ * Extended to support multiple concurrent sync types (incremental, deep, maintenance, thumbnails).
  */
 
+type SyncType = 'thumbnails' | 'incremental' | 'deep' | 'maintenance';
+
 class SyncStateManager {
-    private isMonitoring = false;
-    private listeners: ((state: boolean) => void)[] = [];
+    private activeSyncTypes: Set<SyncType> = new Set();
+    private listeners: ((isActive: boolean) => void)[] = [];
 
-    getIsMonitoring() {
-        return this.isMonitoring;
+    getIsMonitoring(): boolean {
+        return this.activeSyncTypes.size > 0;
     }
 
-    startMonitoring() {
-        this.isMonitoring = true;
+    startMonitoring(type: SyncType): void {
+        this.activeSyncTypes.add(type);
         this.notify();
     }
 
-    stopMonitoring() {
-        this.isMonitoring = false;
+    stopMonitoring(type: SyncType): void {
+        this.activeSyncTypes.delete(type);
         this.notify();
     }
 
-    subscribe(listener: (state: boolean) => void) {
+    isTypeActive(type: SyncType): boolean {
+        return this.activeSyncTypes.has(type);
+    }
+
+    subscribe(listener: (isActive: boolean) => void): () => void {
         this.listeners.push(listener);
         return () => {
             this.listeners = this.listeners.filter(l => l !== listener);
         };
     }
 
-    private notify() {
-        this.listeners.forEach(l => l(this.isMonitoring));
+    private notify(): void {
+        const isActive = this.activeSyncTypes.size > 0;
+        this.listeners.forEach(l => l(isActive));
     }
 }
 

@@ -1,73 +1,99 @@
-# React + TypeScript + Vite
+# CloudHub Explorer UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React application for exploring and managing CloudHub resources. Built with React, TypeScript, and Vite, offering a robust, performant, and developer-friendly experience.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Modern Architecture**: React with TypeScript for type-safe components and logic.
+- **Lightning Fast**: Powered by Vite for instantaneous HMR and optimized production builds.
+- **Cloud Integration**: Seamlessly integrates with the CloudHub Explorer API to visualize and interact with cloud resources.
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Ensure you have the following installed on your local development machine:
 
-## Expanding the ESLint configuration
+- **Node.js**: v18.0.0 or higher
+- **npm** (v9+) or **yarn** (v1.22+)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Installation
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Clone the repository and navigate to the application source directory:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+   ```bash
+   cd react-cloudhub-explorer-ui/application-source
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. Install the project dependencies:
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+## Configuration
+
+This project relies on environment variables for configuration. **Never commit sensitive credentials or secrets to version control.**
+
+1. Copy the example environment file:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. Open `.env.local` and configure the necessary variables for your local environment.
+
+> **Note**: The `.env.local` file is included in `.gitignore` and will not be tracked by Git.
+
+### Example Environment Variables (`.env.example`)
+
+```env
+# API Configuration
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_API_TIMEOUT_MS=5000
+
+# Feature Flags
+VITE_ENABLE_MOCK_DATA=false
+
+# Analytics (Optional)
+VITE_ANALYTICS_ID=your_analytics_tracking_id_here
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Available Scripts
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+In the project directory, you can run:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### `npm run dev` or `yarn dev`
+
+Starts the development server with Hot Module Replacement (HMR). Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
+
+### `npm run build` or `yarn build`
+
+Builds the app for production to the `dist` folder. It correctly bundles React in production mode and optimizes the build for the best performance.
+
+### `npm run lint` or `yarn lint`
+
+Runs ESLint to analyze the code and catch potential errors or stylistic issues.
+
+### `npm run preview` or `yarn preview`
+
+Boots up a local static web server that serves the files from the `dist` folder. Useful for previewing the production build locally.
+
+## Tech Stack
+
+- **Framework**: [React](https://react.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Linting**: [ESLint](https://eslint.org/)
+
+## Contributing
+
+1. Fork the project.
+2. Create your feature branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add some amazing feature'`).
+4. Push to the branch (`git push origin feature/amazing-feature`).
+5. Open a Pull Request.
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.

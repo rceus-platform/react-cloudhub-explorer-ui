@@ -11,28 +11,29 @@
 
 import React, { useState } from "react";
 import { FaChevronRight } from "react-icons/fa";
-import { Cloud, Grid, RefreshCw, FolderPlus, Upload } from "lucide-react";
+import { Cloud, Grid, FolderPlus, Upload } from "lucide-react";
 import type { FolderState } from "../types";
 import { AccountManager } from "../../accounts/components/AccountManager";
 import { SearchFilterBar } from "./SearchFilterBar";
 import { useFileStore } from "../../../store/useFileStore";
+import { SyncToolsMenu } from "./SyncToolsMenu";
 
 interface FileLibraryHeaderProps {
     history: FolderState[];
     columnCount: number;
     onBreadcrumbClick: (index: number) => void;
     onColumnCountChange: (count: number) => void;
-    onRefresh: () => void;
-    onRefreshData: () => void;
-    isRefreshing?: boolean;
 }
 
 /** Ultra-minimalist header with focused navigation and controls */
 export const FileLibraryHeader: React.FC<FileLibraryHeaderProps> = ({
-    history, columnCount, onBreadcrumbClick, onColumnCountChange, onRefresh, onRefreshData, isRefreshing
+    history, columnCount, onBreadcrumbClick, onColumnCountChange
 }) => {
     const [isAccountManagerOpen, setIsAccountManagerOpen] = useState(false);
     const { openCreateFolder, openUploadFile } = useFileStore();
+
+    // Derive current folder ID from history (last item)
+    const currentFolderId = history[history.length - 1]?.id || "root";
 
     return (
         <header className="sticky-header" style={{ height: "72px", display: "flex", alignItems: "center" }}>
@@ -125,33 +126,8 @@ export const FileLibraryHeader: React.FC<FileLibraryHeaderProps> = ({
                         <span style={{ fontSize: "12px" }}>Upload</span>
                     </button>
 
-                    <button
-                        onClick={onRefreshData}
-                        className="premium-button secondary"
-                        style={{
-                            padding: "8px 12px", height: "36px", gap: "6px",
-                            opacity: isRefreshing ? 0.5 : 1,
-                            pointerEvents: isRefreshing ? "none" : "auto"
-                        }}
-                        title="Recalculate folder sizes and refresh data"
-                    >
-                        <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
-                        <span style={{ fontSize: "12px" }}>Refresh Data</span>
-                    </button>
-
-                    <button
-                        onClick={onRefresh}
-                        className="premium-button secondary"
-                        style={{
-                            padding: "8px", height: "36px", width: "36px",
-                            justifyContent: "center",
-                            opacity: isRefreshing ? 0.5 : 1,
-                            pointerEvents: isRefreshing ? "none" : "auto"
-                        }}
-                        title="Refresh cloud data"
-                    >
-                        <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
-                    </button>
+                    {/* Unified Sync & Tools Menu */}
+                    <SyncToolsMenu currentFolderId={currentFolderId} />
 
                     <button
                         onClick={() => setIsAccountManagerOpen(true)}
