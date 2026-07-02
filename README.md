@@ -67,7 +67,7 @@ Create a `.env` file in the `application-source` directory:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8000
-VITE_SITE_PASSCODE=8080
+VITE_SITE_PASSCODE=<your_4_digit_passcode>
 VITE_PERSIST_SEARCH_CACHE=true
 ```
 
@@ -129,7 +129,7 @@ src/
 | Variable                    | Description                            | Default                 |
 | --------------------------- | -------------------------------------- | ----------------------- |
 | `VITE_API_BASE_URL`         | Endpoint for the Python CloudHub API   | `http://localhost:8000` |
-| `VITE_SITE_PASSCODE`        | 4-digit code required to unlock the UI | `8080`                  |
+| `VITE_SITE_PASSCODE`        | 4-digit code required to unlock the UI | `<your_4_digit_passcode>` |
 | `VITE_PERSIST_SEARCH_CACHE` | Keep search results in local storage   | `true`                  |
 
 ---
