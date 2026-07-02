@@ -17,7 +17,7 @@ export function useSyncStatus() {
             const response = await apiClient.get<{ status: string }>("/accounts/sync/status");
             const isRunning = response.status === "running";
             if (!isRunning) {
-                syncStateManager.stopMonitoring();
+                syncStateManager.stopMonitoring('thumbnails');
             }
             return isRunning;
         },

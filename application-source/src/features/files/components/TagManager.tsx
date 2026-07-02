@@ -17,12 +17,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Tag as TagIcon, Plus, Loader } from "lucide-react";
 import { useFileStore } from "../../../store/useFileStore";
 import { updateTags, fetchItems } from "../services/itemService";
-import type { FileSystemItem } from "../types";
+
 
 /** Pill-style tag editor modal */
 export const TagManager: React.FC = () => {
     const { modals, closeTagManager } = useFileStore();
-    const { open, itemId, fileName } = modals.tagManager;
+    const { open, fileName } = modals.tagManager;
 
     const [tags, setTags] = useState<string[]>([]);
     const [inputValue, setInputValue] = useState("");

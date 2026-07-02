@@ -90,7 +90,7 @@ export const useAccountManager = () => {
     setError(null);
     try {
       await apiClient.post('/accounts/sync', {});
-      syncStateManager.startMonitoring();
+      syncStateManager.startMonitoring('thumbnails');
       console.info('Thumbnail sync triggered');
     } catch (err) {
       console.error('Failed to start thumbnail sync:', err);
