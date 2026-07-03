@@ -30,7 +30,7 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           VITE_PERSIST_SEARCH_CACHE: ${{ secrets.VITE_PERSIST_SEARCH_CACHE }}
-          VITE_SITE_PASSCODE: ${{ secrets.SITE_PASSCODE }}
+          VITE_SITE_PASSCODE: ${{ secrets.VITE_SITE_PASSCODE }}
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -96,6 +96,6 @@ jobs:
 
             echo "✅ Deploy completed successfully"
         env:
-          VITE_SITE_PASSCODE: ${{ secrets.SITE_PASSCODE }}
+          VITE_SITE_PASSCODE: ${{ secrets.VITE_SITE_PASSCODE }}
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           VITE_PERSIST_SEARCH_CACHE: ${{ secrets.VITE_PERSIST_SEARCH_CACHE }}
