@@ -134,4 +134,4 @@ src/
 
 ---
 
-Built with ❤️ for a better cloud exploration experience.
+__ Built for a better cloud exploration experience __
