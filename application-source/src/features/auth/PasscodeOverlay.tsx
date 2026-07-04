@@ -67,8 +67,6 @@ export const PasscodeOverlay: React.FC<AuthOverlayProps> = ({ onVerify, onLogin,
 
     if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
-    } else if (value && index === 3 && newPin.join('').length === 4) {
-      performPinSubmit(newPin.join(''));
     }
   };
 
