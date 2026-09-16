@@ -50,4 +50,59 @@ describe("ImageViewer", () => {
         expect(img.style.transform).toContain("rotate(0deg)");
         expect(img.style.transform).toContain("scale(1)");
     });
+
+    it("rotates image when pressing r or R", () => {
+        render(<ImageViewer isOpen items={items} initialIndex={0} onClose={vi.fn()} token="t" />);
+
+        const img = screen.getByAltText("one.jpg") as HTMLImageElement;
+        expect(img.style.transform).toContain("rotate(0deg)");
+
+        fireEvent.keyDown(window, { key: "r" });
+        expect(img.style.transform).toContain("rotate(90deg)");
+
+        fireEvent.keyDown(window, { key: "R" });
+        expect(img.style.transform).toContain("rotate(180deg)");
+    });
+
+    it("zooms in with + and zooms out with - keys", () => {
+        render(<ImageViewer isOpen items={items} initialIndex={0} onClose={vi.fn()} token="t" />);
+
+        const img = screen.getByAltText("one.jpg") as HTMLImageElement;
+        expect(img.style.transform).toContain("scale(1)");
+
+        fireEvent.keyDown(window, { key: "+" });
+        expect(img.style.transform).toContain("scale(1.25)");
+
+        fireEvent.keyDown(window, { key: "=" });
+        expect(img.style.transform).toContain("scale(1.5)");
+
+        fireEvent.keyDown(window, { key: "-" });
+        expect(img.style.transform).toContain("scale(1.25)");
+
+        fireEvent.keyDown(window, { key: "_" });
+        expect(img.style.transform).toContain("scale(1)");
+    });
+
+    it("pans with arrow keys when zoomed in instead of navigating", () => {
+        render(<ImageViewer isOpen items={items} initialIndex={0} onClose={vi.fn()} token="t" />);
+
+        const img = screen.getByAltText("one.jpg") as HTMLImageElement;
+        // Zoom in to 1.5x
+        fireEvent.keyDown(window, { key: "+" });
+        fireEvent.keyDown(window, { key: "+" });
+        expect(img.style.transform).toContain("scale(1.5)");
+
+        // When zoomed in, ArrowRight should pan instead of navigating to next image
+        fireEvent.keyDown(window, { key: "ArrowRight" });
+        expect(screen.getByText(/1 \/ 2/)).toBeDefined();
+
+        fireEvent.keyDown(window, { key: "ArrowLeft" });
+        expect(screen.getByText(/1 \/ 2/)).toBeDefined();
+
+        fireEvent.keyDown(window, { key: "ArrowUp" });
+        expect(screen.getByText(/1 \/ 2/)).toBeDefined();
+
+        fireEvent.keyDown(window, { key: "ArrowDown" });
+        expect(screen.getByText(/1 \/ 2/)).toBeDefined();
+    });
 });

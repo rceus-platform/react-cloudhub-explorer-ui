@@ -41,6 +41,7 @@ type ViewerAction =
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
 const ZOOM_STEP = 0.25;
+const PAN_STEP = 50;
 
 interface FitMetrics {
     baseW: number;
@@ -482,25 +483,109 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         dispatch({ type: "SET_INDEX", payload: state.index - 1 });
     }, [state.index, resetViewState]);
 
+    const handleRotate = useCallback(() => {
+        const next = (rotationRef.current + 90) % 360;
+        rotationRef.current = next;
+        applyTransform(
+            transformRef.current.scale,
+            transformRef.current.x,
+            transformRef.current.y,
+            next
+        );
+    }, [applyTransform]);
+
     useEffect(() => {
         if (!isOpen) return;
 
         const onKeyDown = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement | null;
+            if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
+                return;
+            }
+
             if (event.key === "Escape") {
                 void handleClose();
                 return;
             }
-            if (event.key === "ArrowRight" && state.index < items.length - 1) {
-                handleNext();
+
+            if (event.key === "r" || event.key === "R") {
+                event.preventDefault();
+                handleRotate();
+                return;
             }
-            if (event.key === "ArrowLeft" && state.index > 0) {
-                handlePrev();
+
+            if (event.key === "+" || event.key === "=") {
+                event.preventDefault();
+                applyTransform(
+                    transformRef.current.scale + ZOOM_STEP,
+                    transformRef.current.x,
+                    transformRef.current.y
+                );
+                return;
+            }
+
+            if (event.key === "-" || event.key === "_") {
+                event.preventDefault();
+                applyTransform(
+                    transformRef.current.scale - ZOOM_STEP,
+                    transformRef.current.x,
+                    transformRef.current.y
+                );
+                return;
+            }
+
+            if (transformRef.current.scale > 1) {
+                if (event.key === "ArrowRight") {
+                    event.preventDefault();
+                    applyTransform(
+                        transformRef.current.scale,
+                        transformRef.current.x - PAN_STEP,
+                        transformRef.current.y
+                    );
+                } else if (event.key === "ArrowLeft") {
+                    event.preventDefault();
+                    applyTransform(
+                        transformRef.current.scale,
+                        transformRef.current.x + PAN_STEP,
+                        transformRef.current.y
+                    );
+                } else if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    applyTransform(
+                        transformRef.current.scale,
+                        transformRef.current.x,
+                        transformRef.current.y + PAN_STEP
+                    );
+                } else if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    applyTransform(
+                        transformRef.current.scale,
+                        transformRef.current.x,
+                        transformRef.current.y - PAN_STEP
+                    );
+                }
+            } else {
+                if (event.key === "ArrowRight" && state.index < items.length - 1) {
+                    handleNext();
+                }
+                if (event.key === "ArrowLeft" && state.index > 0) {
+                    handlePrev();
+                }
             }
         };
 
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [isOpen, state.index, items.length, handleClose, handleNext, handlePrev]);
+    }, [
+        isOpen,
+        state.index,
+        items.length,
+        handleClose,
+        handleNext,
+        handlePrev,
+        handleRotate,
+        applyTransform,
+    ]);
 
     const handleWheel: React.WheelEventHandler<HTMLDivElement> = (event) => {
         if (!event.ctrlKey) return;
@@ -583,17 +668,6 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         const delta = targetScale - transformRef.current.scale;
         zoomAtPoint(event.clientX, event.clientY, delta);
     };
-
-    const handleRotate = useCallback(() => {
-        const next = (rotationRef.current + 90) % 360;
-        rotationRef.current = next;
-        applyTransform(
-            transformRef.current.scale,
-            transformRef.current.x,
-            transformRef.current.y,
-            next
-        );
-    }, [applyTransform]);
 
     /** Attempt to fetch the image as a blob if the direct URL fails. */
     const tryBlobFallback = useCallback(async (url: string) => {
