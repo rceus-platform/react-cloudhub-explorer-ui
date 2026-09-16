@@ -33,4 +33,21 @@ describe("ImageViewer", () => {
         fireEvent.click(screen.getByLabelText("Rotate clockwise"));
         expect(screen.getByLabelText("Previous image")).toBeDefined();
     });
+
+    it("supports rotation and reset controls", () => {
+        render(<ImageViewer isOpen items={items} initialIndex={0} onClose={vi.fn()} token="t" />);
+
+        const img = screen.getByAltText("one.jpg") as HTMLImageElement;
+        expect(img.style.transform).toContain("rotate(0deg)");
+
+        fireEvent.click(screen.getByLabelText("Rotate clockwise"));
+        expect(img.style.transform).toContain("rotate(90deg)");
+
+        fireEvent.click(screen.getByLabelText("Rotate clockwise"));
+        expect(img.style.transform).toContain("rotate(180deg)");
+
+        fireEvent.click(screen.getByLabelText("Reset transform"));
+        expect(img.style.transform).toContain("rotate(0deg)");
+        expect(img.style.transform).toContain("scale(1)");
+    });
 });

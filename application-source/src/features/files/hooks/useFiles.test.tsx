@@ -13,12 +13,13 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { useFiles } from "./useFiles";
-import { fetchFiles } from "../services/fileService";
+import { fetchFiles, streamFiles } from "../services/fileService";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 
 vi.mock("../services/fileService", () => ({
     fetchFiles: vi.fn(),
+    streamFiles: vi.fn(),
 }));
 
 const queryClient = new QueryClient({
@@ -30,8 +31,27 @@ const queryClient = new QueryClient({
 });
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+        {children}
+    </QueryClientProvider>
 );
+
+/** Helper to mock streamFiles with immediate SSE-style callback */
+function mockStreamSuccess(data: { folder_id: string; files: unknown[] }) {
+    (streamFiles as Mock).mockImplementation(
+        (_folderId, onEvent) => {
+            setTimeout(() => {
+                onEvent({
+                    files: data.files,
+                    done: true,
+                    account_count: 1,
+                    accounts_received: 1,
+                });
+            }, 0);
+            return () => {};
+        },
+    );
+}
 
 /** Main test suite for the files data fetching hook */
 describe("useFiles Hook", () => {
@@ -40,42 +60,79 @@ describe("useFiles Hook", () => {
         queryClient.clear();
     });
 
-    it("should fetch files and return data", async () => {
+    it("should fetch files via SSE and return data", async () => {
         const mockData = { folder_id: "root", files: [] };
-        (fetchFiles as Mock).mockResolvedValue(mockData);
+        mockStreamSuccess(mockData);
 
-        const { result } = renderHook(() => useFiles("root"), { wrapper });
+        const { result } = renderHook(
+            () => useFiles("root"),
+            { wrapper },
+        );
 
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
-        expect(result.current.data).toEqual(mockData);
-        expect(fetchFiles).toHaveBeenCalledWith("root");
+        await waitFor(() =>
+            expect(result.current.isSuccess).toBe(true),
+        );
+        expect(result.current.data?.files).toEqual([]);
+        expect(streamFiles).toHaveBeenCalled();
     });
 
     it("should handle loading states", async () => {
-        (fetchFiles as Mock).mockReturnValue(new Promise(() => {})); // Never resolves
+        // Stream never calls back
+        (streamFiles as Mock).mockImplementation(() => () => {});
 
-        const { result } = renderHook(() => useFiles("root"), { wrapper });
+        const { result } = renderHook(
+            () => useFiles("root"),
+            { wrapper },
+        );
 
         expect(result.current.isLoading).toBe(true);
     });
 
-    it("should handle error states", async () => {
-        (fetchFiles as Mock).mockRejectedValue(new Error("Fetch failed"));
+    it("should fall back to fetchFiles on SSE error", async () => {
+        const mockData = { folder_id: "root", files: [] };
 
-        const { result } = renderHook(() => useFiles("root"), { wrapper });
+        // SSE errors immediately, triggering fallback
+        (streamFiles as Mock).mockImplementation(
+            (_folderId, _onEvent, onError) => {
+                setTimeout(() => onError?.(new Event("error")), 0);
+                return () => {};
+            },
+        );
+        (fetchFiles as Mock).mockResolvedValue(mockData);
 
-        await waitFor(() => expect(result.current.isError).toBe(true));
-        expect(result.current.error).toEqual(new Error("Fetch failed"));
+        const { result } = renderHook(
+            () => useFiles("root"),
+            { wrapper },
+        );
+
+        await waitFor(() =>
+            expect(result.current.isSuccess).toBe(true),
+        );
+        expect(fetchFiles).toHaveBeenCalledWith("root");
     });
 
     it("should force refresh data when refresh is called", async () => {
-        const initialData = { folder_id: "root", files: [{ name: "A" }] };
-        const freshData = { folder_id: "root", files: [{ name: "B" }] };
+        const initialData = {
+            folder_id: "root",
+            files: [{ name: "A" }],
+        };
+        const freshData = {
+            folder_id: "root",
+            files: [{ name: "B" }],
+        };
 
-        (fetchFiles as Mock).mockResolvedValueOnce(initialData).mockResolvedValueOnce(freshData);
+        mockStreamSuccess(initialData);
 
-        const { result } = renderHook(() => useFiles("root"), { wrapper });
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        const { result } = renderHook(
+            () => useFiles("root"),
+            { wrapper },
+        );
+        await waitFor(() =>
+            expect(result.current.isSuccess).toBe(true),
+        );
+
+        // Refresh uses fetchFiles directly
+        (fetchFiles as Mock).mockResolvedValueOnce(freshData);
 
         await React.act(async () => {
             await result.current.refresh();
@@ -86,17 +143,32 @@ describe("useFiles Hook", () => {
     });
 
     it("should handle error during manual refresh", async () => {
-        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-        (fetchFiles as Mock).mockResolvedValueOnce({ files: [] }).mockRejectedValueOnce(new Error("Refresh Error"));
+        const consoleSpy = vi
+            .spyOn(console, "error")
+            .mockImplementation(() => {});
 
-        const { result } = renderHook(() => useFiles("root"), { wrapper });
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        mockStreamSuccess({ folder_id: "root", files: [] });
+
+        const { result } = renderHook(
+            () => useFiles("root"),
+            { wrapper },
+        );
+        await waitFor(() =>
+            expect(result.current.isSuccess).toBe(true),
+        );
+
+        (fetchFiles as Mock).mockRejectedValueOnce(
+            new Error("Refresh Error"),
+        );
 
         await React.act(async () => {
             await result.current.refresh();
         });
 
-        expect(consoleSpy).toHaveBeenCalledWith("Refresh failed:", expect.any(Error));
+        expect(consoleSpy).toHaveBeenCalledWith(
+            "Refresh failed:",
+            expect.any(Error),
+        );
         expect(result.current.isRefreshing).toBe(false);
         consoleSpy.mockRestore();
     });

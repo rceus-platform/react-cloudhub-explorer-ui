@@ -30,6 +30,14 @@ export interface FilesResponse {
     files: FileItem[];
 }
 
+/** SSE event payload for incremental file streaming */
+export interface FileStreamEvent {
+    files: FileItem[];
+    done: boolean;
+    account_count: number;
+    accounts_received: number;
+}
+
 /** State for folder navigation history */
 export interface FolderState {
     id: string;

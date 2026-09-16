@@ -4,14 +4,15 @@
  * Responsibilities:
  * - Manage the data fetching lifecycle for folder contents
  * - Handle caching and synchronization via TanStack Query
+ * - Use SSE streaming for incremental loading on cache miss
  *
  * Boundaries:
  * - Does not handle navigation or individual file interactions
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchFiles } from "../services/fileService";
+import { fetchFiles, streamFiles } from "../services/fileService";
 import type { FilesResponse } from "../types";
 import { useSyncStatus } from "../../accounts/hooks/useSyncStatus";
 
@@ -21,17 +22,25 @@ export function useFiles(folderId: string) {
     const { data: isSyncRunning } = useSyncStatus();
 
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isStreaming, setIsStreaming] = useState(false);
+    const closeStreamRef = useRef<(() => void) | null>(null);
 
     const normalizedFolderId = useMemo(() => {
         if (!folderId || folderId === "root") return "root";
         try {
             const parsed = JSON.parse(folderId);
             if (typeof parsed === "object" && parsed !== null) {
-                // Sort keys alphabetically for consistent query key
-                return JSON.stringify(Object.keys(parsed).sort().reduce((acc, key) => {
-                    acc[key] = (parsed as Record<string, unknown>)[key];
-                    return acc;
-                }, {} as Record<string, unknown>));
+                return JSON.stringify(
+                    Object.keys(parsed).sort().reduce(
+                        (acc, key) => {
+                            acc[key] = (
+                                parsed as Record<string, unknown>
+                            )[key];
+                            return acc;
+                        },
+                        {} as Record<string, unknown>,
+                    ),
+                );
             }
         } catch {
             // Not a JSON string, use as is
@@ -41,43 +50,96 @@ export function useFiles(folderId: string) {
 
     const query = useQuery<FilesResponse>({
         queryKey: ["files", normalizedFolderId],
-        queryFn: () => fetchFiles(normalizedFolderId),
+        queryFn: ({ signal }) =>
+            new Promise<FilesResponse>((resolve, reject) => {
+                setIsStreaming(true);
+                const qk = ["files", normalizedFolderId];
+
+                const close = streamFiles(
+                    normalizedFolderId,
+                    (event) => {
+                        const partial: FilesResponse = {
+                            folder_id: normalizedFolderId,
+                            files: event.files,
+                        };
+
+                        // Update query cache incrementally
+                        queryClient.setQueryData(qk, partial);
+
+                        if (event.done) {
+                            setIsStreaming(false);
+                            closeStreamRef.current = null;
+                            resolve(partial);
+                        }
+                    },
+                    () => {
+                        // SSE error: fall back to regular fetch
+                        setIsStreaming(false);
+                        closeStreamRef.current = null;
+                        fetchFiles(normalizedFolderId)
+                            .then(resolve)
+                            .catch(reject);
+                    },
+                );
+
+                closeStreamRef.current = close;
+
+                if (signal) {
+                    signal.addEventListener("abort", () => {
+                        close();
+                        setIsStreaming(false);
+                        closeStreamRef.current = null;
+                    });
+                }
+            }),
         staleTime: 30 * 60 * 1000,
-        // Keep in cache for 1 hour
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
-        // Use native refetchInterval for more robust adaptive polling
         refetchInterval: (query) => {
             const data = query.state.data;
             if (!data?.files) return false;
 
-            const hasMissing = data.files.some(f =>
-                f.type === "file" &&
-                (!f.updated_at || f.is_generating) &&
-                /\.(mp4|mkv|mov|avi|wmv|flv|webm|jpg|jpeg|png|webp|heic|gif|bmp)$/i.test(f.name)
+            const hasMissing = data.files.some(
+                (f) =>
+                    f.type === "file" &&
+                    (!f.updated_at || f.is_generating) &&
+                    /\.(mp4|mkv|mov|avi|wmv|flv|webm|jpg|jpeg|png|webp|heic|gif|bmp)$/i.test(
+                        f.name,
+                    ),
             );
 
-            return (isSyncRunning || hasMissing) ? 3000 : false;
-        }
+            return isSyncRunning || hasMissing ? 3000 : false;
+        },
     });
 
-    /** Manual trigger to bypass all caches and force-refresh from cloud providers */
+    /** Manual trigger to bypass all caches */
     const refresh = async () => {
         setIsRefreshing(true);
         try {
-            // 1. Force refresh the current folder immediately
-            const freshData = await fetchFiles(normalizedFolderId, true);
-            queryClient.setQueryData(["files", normalizedFolderId], freshData);
+            const freshData = await fetchFiles(
+                normalizedFolderId,
+                true,
+            );
+            queryClient.setQueryData(
+                ["files", normalizedFolderId],
+                freshData,
+            );
 
-            // 2. Trigger global background sync for all folders
-            import("../../../services/apiClient").then(({ apiClient }) => {
-                apiClient.post("/accounts/sync", {}).catch(err => console.error("Global sync failed:", err));
-            });
+            import("../../../services/apiClient").then(
+                ({ apiClient }) => {
+                    apiClient
+                        .post("/accounts/sync", {})
+                        .catch((err) =>
+                            console.error("Global sync failed:", err),
+                        );
+                },
+            );
 
-            // 3. Start monitoring sync status to show feedback in UI
-            import("../../accounts/utils/syncState").then(({ syncStateManager }) => {
-                syncStateManager.startMonitoring('thumbnails');
-            });
+            import("../../accounts/utils/syncState").then(
+                ({ syncStateManager }) => {
+                    syncStateManager.startMonitoring("thumbnails");
+                },
+            );
         } catch (error) {
             console.error("Refresh failed:", error);
         } finally {
@@ -85,15 +147,26 @@ export function useFiles(folderId: string) {
         }
     };
 
-    /** Full data refresh: rebuild folder sizes server-side, then reload current folder */
+    /** Full data refresh: rebuild folder sizes then reload */
     const refreshData = async (): Promise<boolean> => {
         setIsRefreshing(true);
         try {
-            const { apiClient } = await import("../../../services/apiClient");
-            await apiClient.post<{ message: string }>("/accounts/recalculate-sizes", {});
+            const { apiClient } = await import(
+                "../../../services/apiClient"
+            );
+            await apiClient.post<{ message: string }>(
+                "/accounts/recalculate-sizes",
+                {},
+            );
 
-            const freshData = await fetchFiles(normalizedFolderId, true);
-            queryClient.setQueryData(["files", normalizedFolderId], freshData);
+            const freshData = await fetchFiles(
+                normalizedFolderId,
+                true,
+            );
+            queryClient.setQueryData(
+                ["files", normalizedFolderId],
+                freshData,
+            );
             return true;
         } catch (error) {
             console.error("Refresh data failed:", error);
@@ -103,5 +176,11 @@ export function useFiles(folderId: string) {
         }
     };
 
-    return { ...query, refresh, refreshData, isRefreshing };
+    return {
+        ...query,
+        refresh,
+        refreshData,
+        isRefreshing,
+        isStreaming,
+    };
 }

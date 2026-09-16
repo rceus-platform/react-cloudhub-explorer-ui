@@ -10,12 +10,50 @@
  */
 
 import { apiClient } from "../../../services/apiClient";
-import type { FilesResponse } from "../types";
+import type { FileStreamEvent, FilesResponse } from "../types";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 /** Fetch file listing for a specific folder */
-export const fetchFiles = async (folderId: string = "root", refresh: boolean = false): Promise<FilesResponse> => {
+export const fetchFiles = async (
+    folderId: string = "root",
+    refresh: boolean = false,
+): Promise<FilesResponse> => {
     const url = `/files/?folder_id=${encodeURIComponent(folderId)}${refresh ? "&refresh=true" : ""}`;
     return apiClient.get<FilesResponse>(url);
+};
+
+/** Open an SSE stream for incremental file loading */
+export const streamFiles = (
+    folderId: string,
+    onEvent: (event: FileStreamEvent) => void,
+    onError?: (error: Event) => void,
+): (() => void) => {
+    const token = localStorage.getItem("access_token");
+    const params = new URLSearchParams({
+        folder_id: folderId,
+    });
+    if (token) params.set("token", token);
+
+    const url = `${BASE_URL}/files/stream-files?${params}`;
+    const source = new EventSource(url);
+
+    source.onmessage = (e: MessageEvent) => {
+        try {
+            const data: FileStreamEvent = JSON.parse(e.data);
+            onEvent(data);
+            if (data.done) source.close();
+        } catch {
+            // Ignore malformed events
+        }
+    };
+
+    source.onerror = (e: Event) => {
+        source.close();
+        onError?.(e);
+    };
+
+    return () => source.close();
 };
 
 /** Update thumbnail for a file via timestamp capture or manual upload */

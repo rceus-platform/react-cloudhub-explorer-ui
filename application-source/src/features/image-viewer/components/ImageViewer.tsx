@@ -94,7 +94,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
     const transformRef = useRef({ scale: 1, x: 0, y: 0 });
     const [zoomLevel, setZoomLevel] = useState(1);
     const [isFullscreenActive, setIsFullscreenActive] = useState(false);
-    const [rotation, setRotation] = useState(0);
+    const rotationRef = useRef(0);
     const [isControlsVisible, setIsControlsVisible] = useState(true);
     const hideControlsTimerRef = useRef<number | null>(null);
     const imageCacheRef = useRef<Map<string, CachedImageEntry>>(new Map());
@@ -113,7 +113,10 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
     const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
     /** Calculate fit metrics for the current image and stage dimensions. */
-    const getFitMetrics = useCallback((scale: number): FitMetrics => {
+    const getFitMetrics = useCallback((
+        scale: number,
+        currentRotation: number = rotationRef.current
+    ): FitMetrics => {
         const stage = stageRef.current;
         const image = imageRef.current;
         if (!stage || !image || image.naturalWidth === 0 || image.naturalHeight === 0) {
@@ -122,50 +125,54 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
 
         const stageW = stage.clientWidth;
         const stageH = stage.clientHeight;
-        const isVerticalRotation = rotation % 180 !== 0;
-        const naturalW = isVerticalRotation ? image.naturalHeight : image.naturalWidth;
-        const naturalH = isVerticalRotation ? image.naturalWidth : image.naturalHeight;
-        const fitRatio = Math.min(stageW / naturalW, stageH / naturalH);
-        const baseW = naturalW * fitRatio;
-        const baseH = naturalH * fitRatio;
-        const maxX = Math.max(0, ((baseW * scale) - baseW) / 2);
-        const maxY = Math.max(0, ((baseH * scale) - baseH) / 2);
+        const isVerticalRotation = currentRotation % 180 !== 0;
+        const fitRatio = isVerticalRotation
+            ? Math.min(stageW / image.naturalHeight, stageH / image.naturalWidth)
+            : Math.min(stageW / image.naturalWidth, stageH / image.naturalHeight);
+        const baseW = image.naturalWidth * fitRatio;
+        const baseH = image.naturalHeight * fitRatio;
+        const visualW = isVerticalRotation ? baseH : baseW;
+        const visualH = isVerticalRotation ? baseW : baseH;
+        const maxX = Math.max(0, ((visualW * scale) - visualW) / 2);
+        const maxY = Math.max(0, ((visualH * scale) - visualH) / 2);
         return { baseW, baseH, maxX, maxY, stageW, stageH };
-    }, [rotation]);
+    }, []);
 
     /** Apply CSS transformations to the image element. */
-    const applyTransform = useCallback((nextScale: number, nextX: number, nextY: number) => {
+    const applyTransform = useCallback((
+        nextScale: number,
+        nextX: number,
+        nextY: number,
+        currentRotation: number = rotationRef.current
+    ) => {
         const image = imageRef.current;
         if (!image) return;
 
         const boundedScale = clamp(nextScale, MIN_ZOOM, MAX_ZOOM);
-        const { baseW, baseH, maxX, maxY } = getFitMetrics(boundedScale);
+        const { baseW, baseH, maxX, maxY } = getFitMetrics(boundedScale, currentRotation);
         const boundedX = clamp(nextX, -maxX, maxX);
         const boundedY = clamp(nextY, -maxY, maxY);
 
         transformRef.current = { scale: boundedScale, x: boundedX, y: boundedY };
+        rotationRef.current = currentRotation;
         if (baseW > 0 && baseH > 0) {
             image.style.width = `${baseW}px`;
             image.style.height = `${baseH}px`;
-            image.style.maxWidth = "100%";
-            image.style.maxHeight = "100%";
+            image.style.maxWidth = "none";
+            image.style.maxHeight = "none";
             image.style.objectFit = "contain";
         }
-        image.style.transform = `translate3d(${boundedX}px, ${boundedY}px, 0) scale(${boundedScale}) rotate(${rotation}deg)`;
+        image.style.transform = (
+            `translate3d(${boundedX}px, ${boundedY}px, 0) scale(${boundedScale}) ` +
+            `rotate(${currentRotation}deg)`
+        );
         setZoomLevel(boundedScale);
-    }, [getFitMetrics, rotation]);
-
-    /** Reset the image to its base scale and position. */
-    const resetTransform = useCallback(() => {
-        applyTransform(1, 0, 0);
-    }, [applyTransform]);
+    }, [getFitMetrics]);
 
     /** Reset the rotation and view state of the image. */
     const resetViewState = useCallback(() => {
-        requestAnimationFrame(() => {
-            setRotation(0);
-            applyTransform(1, 0, 0);
-        });
+        rotationRef.current = 0;
+        applyTransform(1, 0, 0, 0);
     }, [applyTransform]);
 
     /** Zoom into the image at a specific screen point. */
@@ -376,12 +383,12 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
 
     useEffect(() => {
         if (!isOpen || !hasItems) return;
-        const start = Math.max(0, state.index - 5);
-        const end = Math.min(items.length - 1, state.index + 5);
         const preloadTargets: string[] = [];
-        for (let i = start; i <= end; i += 1) {
-            if (i === state.index) continue;
-            preloadTargets.push(getImageUrl(items[i]));
+        if (state.index + 1 < items.length) {
+            preloadTargets.push(getImageUrl(items[state.index + 1]));
+        }
+        if (state.index - 1 >= 0) {
+            preloadTargets.push(getImageUrl(items[state.index - 1]));
         }
 
         scheduleIdle(() => {
@@ -449,8 +456,17 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
 
     useEffect(() => {
         if (!isOpen) return;
-        applyTransform(transformRef.current.scale, transformRef.current.x, transformRef.current.y);
-    }, [rotation, isOpen, applyTransform]);
+        const handleResize = () => {
+            applyTransform(
+                transformRef.current.scale,
+                transformRef.current.x,
+                transformRef.current.y,
+                rotationRef.current
+            );
+        };
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, [isOpen, applyTransform]);
 
     /** Navigate to the next image in the collection. */
     const handleNext = useCallback(() => {
@@ -568,9 +584,16 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         zoomAtPoint(event.clientX, event.clientY, delta);
     };
 
-    const handleRotate = () => {
-        setRotation((prev) => (prev + 90) % 360);
-    };
+    const handleRotate = useCallback(() => {
+        const next = (rotationRef.current + 90) % 360;
+        rotationRef.current = next;
+        applyTransform(
+            transformRef.current.scale,
+            transformRef.current.x,
+            transformRef.current.y,
+            next
+        );
+    }, [applyTransform]);
 
     /** Attempt to fetch the image as a blob if the direct URL fails. */
     const tryBlobFallback = useCallback(async (url: string) => {
@@ -738,7 +761,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                     <div className="viewer-group">
                         <button className="viewer-icon-btn" aria-label="Zoom out" onClick={(e) => { e.stopPropagation(); applyTransform(transformRef.current.scale - ZOOM_STEP, transformRef.current.x, transformRef.current.y); }}>−</button>
                         <button className="viewer-icon-btn" aria-label="Zoom in" onClick={(e) => { e.stopPropagation(); applyTransform(transformRef.current.scale + ZOOM_STEP, transformRef.current.x, transformRef.current.y); }}>+</button>
-                        <button className="viewer-icon-btn" aria-label="Reset transform" onClick={(e) => { e.stopPropagation(); resetTransform(); setRotation(0); }}>⟳</button>
+                        <button className="viewer-icon-btn" aria-label="Reset transform" onClick={(e) => { e.stopPropagation(); resetViewState(); }}>⟳</button>
                         <button className="viewer-icon-btn" aria-label="Rotate clockwise" onClick={(e) => { e.stopPropagation(); handleRotate(); }}>↻</button>
                     </div>
                     <div className="viewer-group">
@@ -789,8 +812,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                             onPointerLeave={handlePointerUp}
                             onDoubleClick={handleDoubleClick}
                             onLoad={() => {
-                                resetTransform();
-                                requestAnimationFrame(() => applyTransform(1, 0, 0));
+                                applyTransform(1, 0, 0, rotationRef.current);
                                 dispatch({ type: "LOAD_SUCCESS" });
                             }}
                             onError={() => {
@@ -802,10 +824,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                                 dispatch({ type: "LOAD_ERROR", payload: "Failed to load image" });
                             }}
                             style={{
-                                maxWidth: "100%",
-                                maxHeight: "100%",
                                 objectFit: "contain",
-                                transform: `translate3d(0px, 0px, 0) scale(1) rotate(${rotation}deg)`,
                                 transformOrigin: "center center",
                                 transition: "transform 140ms ease-out, opacity 180ms ease",
                                 opacity: state.loading ? 0 : 1,

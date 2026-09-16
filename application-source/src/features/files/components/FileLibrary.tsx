@@ -207,7 +207,7 @@ export const FileLibrary: React.FC = () => {
                 <FileLibraryHero
                     title={currentFolder.name}
                     itemCount={files.length}
-                    isLoading={isLoading}
+                    isLoading={isLoading && files.length === 0}
                 />
 
                 <div
@@ -221,7 +221,7 @@ export const FileLibrary: React.FC = () => {
                         alignItems: "start"
                     }}
                 >
-                    {isLoading ? (
+                    {isLoading && files.length === 0 ? (
                         Array.from({ length: 8 }).map((_, i) => (
                             <FileCardSkeleton key={i} />
                         ))

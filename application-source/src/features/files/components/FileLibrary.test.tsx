@@ -4,6 +4,8 @@
 
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 import { FileLibrary } from "./FileLibrary";
 import { useFiles } from "../hooks/useFiles";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -22,12 +24,20 @@ vi.mock("react-router-dom", () => ({
     useLocation: vi.fn(),
 }));
 
+const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+});
+
+const renderWithClient = (ui: React.ReactElement) =>
+    render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+
 describe("FileLibrary Component", () => {
     const mockNavigate = vi.fn();
     const mockRefresh = vi.fn();
 
     beforeEach(() => {
         vi.clearAllMocks();
+        queryClient.clear();
         (useNavigate as Mock).mockReturnValue(mockNavigate);
         (useLocation as Mock).mockReturnValue({ pathname: "/Home", search: "" });
         (useFiles as Mock).mockReturnValue({
@@ -38,8 +48,8 @@ describe("FileLibrary Component", () => {
     });
 
     it("renders loading state", () => {
-        (useFiles as Mock).mockReturnValue({ isLoading: true });
-        render(<FileLibrary />);
+        (useFiles as Mock).mockReturnValue({ isLoading: true, data: { files: [] } });
+        renderWithClient(<FileLibrary />);
         expect(screen.getByTestId("skeleton-grid")).toBeDefined();
     });
 
@@ -53,7 +63,7 @@ describe("FileLibrary Component", () => {
             refresh: mockRefresh,
         });
 
-        render(<FileLibrary />);
+        renderWithClient(<FileLibrary />);
         expect(screen.getByText("Folder A")).toBeDefined();
 
         fireEvent.click(screen.getByText("Folder A"));
@@ -73,7 +83,7 @@ describe("FileLibrary Component", () => {
             refresh: mockRefresh,
         });
 
-        render(<FileLibrary />);
+        renderWithClient(<FileLibrary />);
         fireEvent.click(screen.getByText("photo.jpg"));
 
         expect(screen.getByRole("dialog")).toBeDefined();
