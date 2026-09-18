@@ -38,7 +38,7 @@ type ViewerAction =
     | { type: "LOAD_SUCCESS" }
     | { type: "LOAD_ERROR"; payload: string };
 
-const MIN_ZOOM = 1;
+const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 4;
 const ZOOM_STEP = 0.25;
 const PAN_STEP = 50;
@@ -134,8 +134,14 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         const baseH = image.naturalHeight * fitRatio;
         const visualW = isVerticalRotation ? baseH : baseW;
         const visualH = isVerticalRotation ? baseW : baseH;
-        const maxX = Math.max(0, ((visualW * scale) - visualW) / 2);
-        const maxY = Math.max(0, ((visualH * scale) - visualH) / 2);
+        const maxX = Math.max(
+            Math.max(0, ((visualW * scale) - visualW) / 2),
+            Math.max(0, (stageW - (visualW * scale)) / 2)
+        );
+        const maxY = Math.max(
+            Math.max(0, ((visualH * scale) - visualH) / 2),
+            Math.max(0, (stageH - (visualH * scale)) / 2)
+        );
         return { baseW, baseH, maxX, maxY, stageW, stageH };
     }, []);
 
@@ -504,7 +510,24 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             }
 
             if (event.key === "Escape") {
-                void handleClose();
+                event.preventDefault();
+                const isTransformed =
+                    Math.abs(transformRef.current.scale - 1) > 0.01 ||
+                    rotationRef.current !== 0 ||
+                    Math.abs(transformRef.current.x) > 0.01 ||
+                    Math.abs(transformRef.current.y) > 0.01;
+
+                if (isTransformed) {
+                    resetViewState();
+                } else {
+                    void handleClose();
+                }
+                return;
+            }
+
+            if (event.key === "e" || event.key === "E") {
+                event.preventDefault();
+                resetViewState();
                 return;
             }
 
@@ -534,7 +557,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                 return;
             }
 
-            if (transformRef.current.scale > 1) {
+            const isZoomedOrPanned = Math.abs(transformRef.current.scale - 1) > 0.01;
+            if (isZoomedOrPanned) {
                 if (event.key === "ArrowRight") {
                     event.preventDefault();
                     applyTransform(
@@ -584,6 +608,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         handleNext,
         handlePrev,
         handleRotate,
+        resetViewState,
         applyTransform,
     ]);
 
@@ -606,7 +631,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             pinchStartScaleRef.current = transformRef.current.scale;
         }
 
-        if (transformRef.current.scale > 1) {
+        if (Math.abs(transformRef.current.scale - 1) > 0.01) {
             dragRef.current = {
                 active: true,
                 pointerId: event.pointerId,
@@ -631,13 +656,17 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             const dy = values[0].y - values[1].y;
             const distance = Math.hypot(dx, dy);
             const scaleMultiplier = distance / pinchStartDistanceRef.current;
-            const nextScale = clamp(pinchStartScaleRef.current * scaleMultiplier, MIN_ZOOM, MAX_ZOOM);
+            const nextScale = clamp(
+                pinchStartScaleRef.current * scaleMultiplier,
+                MIN_ZOOM,
+                MAX_ZOOM
+            );
             applyTransform(nextScale, transformRef.current.x, transformRef.current.y);
             return;
         }
 
         if (!dragRef.current.active || dragRef.current.pointerId !== event.pointerId) return;
-        if (transformRef.current.scale <= 1) return;
+        if (Math.abs(transformRef.current.scale - 1) <= 0.01) return;
 
         const dx = event.clientX - dragRef.current.lastX;
         const dy = event.clientY - dragRef.current.lastY;
@@ -664,7 +693,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
     };
 
     const handleDoubleClick: React.MouseEventHandler<HTMLImageElement> = (event) => {
-        const targetScale = transformRef.current.scale > 1 ? 1 : 2;
+        const targetScale = Math.abs(transformRef.current.scale - 1) > 0.01 ? 1 : 2;
         const delta = targetScale - transformRef.current.scale;
         zoomAtPoint(event.clientX, event.clientY, delta);
     };
@@ -835,7 +864,17 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                     <div className="viewer-group">
                         <button className="viewer-icon-btn" aria-label="Zoom out" onClick={(e) => { e.stopPropagation(); applyTransform(transformRef.current.scale - ZOOM_STEP, transformRef.current.x, transformRef.current.y); }}>−</button>
                         <button className="viewer-icon-btn" aria-label="Zoom in" onClick={(e) => { e.stopPropagation(); applyTransform(transformRef.current.scale + ZOOM_STEP, transformRef.current.x, transformRef.current.y); }}>+</button>
-                        <button className="viewer-icon-btn" aria-label="Reset transform" onClick={(e) => { e.stopPropagation(); resetViewState(); }}>⟳</button>
+                        <button
+                            className="viewer-icon-btn"
+                            aria-label="Reset to 1x (E or Esc)"
+                            title="Reset to 1x (E or Esc)"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                resetViewState();
+                            }}
+                        >
+                            ⟳
+                        </button>
                         <button className="viewer-icon-btn" aria-label="Rotate clockwise" onClick={(e) => { e.stopPropagation(); handleRotate(); }}>↻</button>
                     </div>
                     <div className="viewer-group">
